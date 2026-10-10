@@ -146,3 +146,22 @@ def test_judge_v12():
     worse = v12_reports()
     worse["model"]["overall"]["accuracy"] = 0.88
     assert judge_v12(worse, 4.0, TRIM, CERT)["P4"]["pass"] is False
+
+
+def test_output_paths_keep_the_preregistered_read_apart():
+    from pathlib import Path
+
+    from countrycode.evaluation.final import output_paths
+
+    out, per_item, release = output_paths(Path("results"), "test_v12")
+    assert out == Path("results/test_v12") and release
+    assert per_item == Path("data/processed/eval/test_v12_predictions.jsonl")
+    out, per_item, release = output_paths(Path("results/posthoc-v1.2.1"), "test_v12")
+    assert out == Path("results/posthoc-v1.2.1/test_v12") and not release
+    assert per_item == Path("data/processed/eval/posthoc-v1.2.1_test_v12_predictions.jsonl")
+
+
+def test_lexicon_context_is_a_registered_baseline_but_not_part_of_p4():
+    from countrycode.evaluation.final import NON_LLM_BASELINES
+
+    assert "lexicon_context" not in NON_LLM_BASELINES  # P4 stays as pre-registered

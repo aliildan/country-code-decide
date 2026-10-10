@@ -258,7 +258,7 @@ def test_at_a_glance_is_rendered_from_the_release_results(tmp_path):
     assert "90.0 %" in out and "85.0–92.0" in out  # accuracy with its 95 % interval
     assert "95.0 %" in out  # right country
     assert "2 % error target" in out and "81 %" in out and "1.2 %" in out
-    assert "multilingual-e5 nearest name" in out and "82.5 %" in out  # readable baseline label
+    assert "multilingual-e5-small nearest name" in out and "82.5 %" in out  # readable label
     assert "v1_model" not in out
     assert "qwen3.5_35b" in out and "29× slower (LLM on a GPU, this model on a CPU)" in out
     assert "75 MB" in out and "4.1 ms" in out
@@ -338,18 +338,6 @@ def test_synthetic_block_states_the_generated_share_of_training(tmp_path):
     )
 
 
-def test_web_parity_sentence_from_results(tmp_path):
-    r = _v12(tmp_path, True)
-    assert make_docs._web_parity(r) == "_browser parity not measured_"
-    (r / "web-parity-small-v1.2.json").write_text(json.dumps({
-        "part": "select", "n": 3570, "top1_agreement": 0.9894,
-        "decision_agreement": {"0.02": 0.9986, "0.05": 0.9958},
-        "max_abs_dp": 0.0828, "mean_abs_dp_top": 0.0055}))  # fmt: skip
-    out = make_docs._web_parity(r)
-    assert "3,570" in out and "99.9 %" in out and "98.9 %" in out
-    assert "0.005" in out and "0.08" in out and "2 % target" in out
-
-
 def test_citation_cff_is_generated_from_links_and_gains_dois_once_minted(tmp_path):
     import yaml
 
@@ -370,3 +358,144 @@ def test_citation_cff_is_generated_from_links_and_gains_dois_once_minted(tmp_pat
     assert cff["doi"] == "10.5281/zenodo.22"
     pc = cff["preferred-citation"]
     assert pc["doi"] == "10.5281/zenodo.11" and pc["title"] == "Paper T" and pc["type"] == "article"
+
+
+def _v121(tmp_path):
+    """A post-hoc release (v1.2.1): the pre-registered read in test_v12, the release's own
+    evaluation in posthoc-v1.2.1/<part>."""
+    r = _glance(tmp_path, True)  # results/test_v12 = the pre-registered read (P1 met)
+    (r / "test_v12" / "hypotheses.json").write_text(
+        json.dumps({"P1": {"pass": True, "p_value_risk_le_2pct": 0.9}, "A1": {"certified": False}})
+    )
+    (r / "release.json").write_text(json.dumps({
+        "version": "small-v1.2.1", "part": "posthoc-v1.2.1/test_v12", "preregistered": "test_v12",
+        "hypotheses": "v12", "model_version": "small-v1.2"}))  # fmt: skip
+    ph = r / "posthoc-v1.2.1"
+
+    def rep(part, name, acc, slices=None, **o):
+        n = {"test_v12": 361, "test_v11": 656, "ood": 3980}[part]
+        (ph / part).mkdir(parents=True, exist_ok=True)
+        (ph / part / f"{name}.json").write_text(json.dumps({
+            "predictor": name, "latency_ms_per_item": 117.0 if name.startswith("llm") else 4.2,
+            "slices": slices or {}, "overall": {"n": n, "accuracy": acc,
+                                                "country_accuracy": acc, **o}}))  # fmt: skip
+
+    def lab(auto, hand, answered):
+        return {"label=auto_exact": {"n": 261, "accuracy": auto, "answered": 1.0},
+                "label=reviewed_proposal": {"n": 100, "accuracy": hand, "answered": answered},
+                "script=LATIN": {"n": 361}}  # fmt: skip
+
+    rep("test_v12", "model", 0.886, lab(259 / 261, 0.61, 1.0), accuracy_ci95=[0.85, 0.92])
+    rep(
+        "test_v12",
+        "model@0.05",
+        0.864,
+        lab(256 / 261, 0.56, 0.61),
+        answered=0.878,
+        risk_answered=0.025,
+        none_false_accept=0.0,
+    )
+    rep("test_v12", "lexicon_context", 0.895, lab(260 / 261, 0.63, 0.62))
+    rep("test_v12", "llm_qwen3.5_35b-a3b-q4_K_M", 0.85, lab(246 / 261, 0.61, 0.97))
+    rep(
+        "test_v11",
+        "model",
+        0.826,
+        {
+            "script=LATIN": {"n": 640},
+            "script=NONE": {"n": 16},
+            "lexicon=novel": {"n": 472, "accuracy": 0.811},
+        },
+    )
+    rep(
+        "test_v11",
+        "llm_qwen3.5_35b-a3b-q4_K_M",
+        0.738,
+        {"lexicon=novel": {"n": 472, "accuracy": 0.731}},
+    )
+    rep("test_v11", "lexicon_context", 0.358)
+    rep("ood", "model", 0.589, {"script=LATIN": {"n": 3975}, "script=CYRILLIC": {"n": 5}})
+    rep("ood", "llm_qwen3.5_35b-a3b-q4_K_M", 0.696)
+    for v, two, five, units in (("small-v1.2", 0.827, 0.576, None),
+                                ("small-v1.2.1", None, 0.762, 318)):  # fmt: skip
+        notes = {"n_cert_units": units} if units else {}
+        (r / f"calibration-{v}.json").write_text(json.dumps({"domains": {"register": {
+            "n_calib": 592, "thresholds": {"0.01": None, "0.02": two, "0.05": five},
+            "notes": notes}}}))  # fmt: skip
+    (r / "latency-small-v1.2.1.json").write_text(
+        json.dumps({"p50_ms": 4.09, "p95_ms": 5.07, "threads": 4, "int8_bytes": 74_731_597})
+    )
+    (r / "real").mkdir(exist_ok=True)
+    (r / "real" / "gold_quality.json").write_text(json.dumps({
+        "n": 592, "agreement": 0.9916, "disagree": 5, "gold_error_upper_95": 0.0177,
+        "by_mode": {"auto_exact": {"n": 337, "disagree": 0}, "preset": {"n": 37, "disagree": 0},
+                    "reviewed_proposal": {"n": 218, "disagree": 5}}}))  # fmt: skip
+    return r
+
+
+def test_posthoc_release_shows_the_preregistered_verdicts_as_read(tmp_path):
+    r = _v121(tmp_path)
+    assert "| P1 | met |" in make_docs._hypotheses(r)
+    alpha, note = make_docs._operating_point(r)
+    assert alpha == "0.05" and "318" in note and "2 %" in note
+
+
+def test_certificate_note_compares_item_and_unit_level_certificates(tmp_path):
+    out = make_docs._certificate_note(_v121(tmp_path))
+    for s in ("592", "318", "not certified", "0.762", "after"):
+        assert s in out, s
+
+
+def test_label_type_table_from_slices(tmp_path):
+    out = make_docs._label_types(_v121(tmp_path))
+    assert "| CountryCode-Decide (always answers) | 99.2 % | 61.0 % | 100 |" in out
+    assert "| Lexicon + context rules | 99.6 % | 63.0 % | 62 |" in out
+    assert "261" in out and "100" in out
+
+
+def test_where_the_model_helps_from_the_other_sets(tmp_path):
+    out = make_docs._where_it_helps(_v121(tmp_path))
+    for s in ("656", "82.6 %", "73.8 %", "35.8 %", "81.1 %", "69.6 %", "58.9 %"):
+        assert s in out, s
+
+
+def test_gold_quality_reports_hand_labels_and_single_pass_test_labels(tmp_path):
+    out = make_docs._gold_quality(_v121(tmp_path))
+    assert "218 hand-labelled" in out and "2.3 %" in out and "once" in out
+
+
+def test_script_scope_counts_non_latin_evaluation_strings(tmp_path):
+    out = make_docs._script_scope(_v121(tmp_path))
+    assert "4,997" in out and "5 " in out and "not measured" in out
+
+
+def test_hard_risk_shows_where_the_errors_of_the_operating_point_are(tmp_path):
+    r = _v121(tmp_path)
+    p = r / "posthoc-v1.2.1" / "test_v12" / "model@0.05.json"
+    d = json.loads(p.read_text())
+    d["slices"] = {"label=auto_exact": {"n": 261, "answered": 0.98, "risk_answered": 0.0},
+                   "label=reviewed_proposal": {"n": 100, "answered": 0.61,
+                                               "risk_answered": 0.082}}  # fmt: skip
+    p.write_text(json.dumps(d))
+    out = make_docs._hard_risk(r)
+    assert "8.2 %" in out and "0.0 %" in out and "61" in out
+
+
+def test_other_set_tables_follow_the_release_run(tmp_path):
+    r = _v121(tmp_path)
+    (r / "posthoc-v1.2.1" / "test_v11" / "TABLE.md").write_text("| posthoc | 1 |\n")
+    (r / "test_v11").mkdir()
+    (r / "test_v11" / "TABLE.md").write_text("| preregistered era | 1 |\n")
+    assert "posthoc" in make_docs.render("{{TABLE_V11}}", r)
+
+
+def test_llm_latency_comes_from_a_run_that_called_the_llm(tmp_path):
+    r = _v121(tmp_path)
+    p = r / "posthoc-v1.2.1" / "test_v12" / "llm_qwen3.5_35b-a3b-q4_K_M.json"
+    d = json.loads(p.read_text())
+    d["latency_ms_per_item"] = 0.004  # answers read from the cache in the post-hoc run
+    p.write_text(json.dumps(d))
+    d["latency_ms_per_item"] = 117.0  # the pre-registered read called the LLM
+    (r / "test_v12" / "llm_qwen3.5_35b-a3b-q4_K_M.json").write_text(json.dumps(d))
+    assert "~29× slower" in make_docs._at_a_glance(r)  # 117 ms in the pre-registered read
+    assert "~29× slower" in make_docs._headline(r)

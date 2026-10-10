@@ -18,6 +18,7 @@ import yaml
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from rapidfuzz import fuzz
 
+from countrycode.paths import CONFIGS
 from countrycode.synth.framework import (
     MIN_NOISE_KEY,
     PRIORITY_LANGS,
@@ -30,7 +31,7 @@ from countrycode.synth.framework import (
 )
 from countrycode.text import compact_key
 
-CONFIG_PATH = Path("configs/synth/ocr.yaml")
+CONFIG_PATH = CONFIGS / "synth" / "ocr.yaml"
 CACHE_PATH = Path("data/interim/synth/ocr_readings.jsonl")
 
 

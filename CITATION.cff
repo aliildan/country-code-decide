@@ -4,18 +4,18 @@ title: 'CountryCode-Decide: messy country names to ISO 3166 codes, with calibrat
 authors:
 - family-names: Ildan
   given-names: Ali
-version: 1.2.0
+version: 1.2.1
 date-released: '2026-10-10'
 license: Apache-2.0
 repository-code: https://github.com/aliildan/country-code-decide
 url: https://huggingface.co/aildan/country-code-decide-small
-abstract: A small open-weight model (mmBERT-small, 8-bit ONNX, CPU or browser) that maps a country or
-  US state written as free text in company registers and forms (any language or script, misspelled, abbreviated,
-  historical) to ISO 3166-1 alpha-2 and ISO 3166-2:US codes with calibrated probabilities, and abstains
-  with a short candidate list when a certified error-rate target cannot be met. Training combines Unicode
-  CLDR and Wikidata names, real register strings and generated variants that passed quality gates and
-  a human label audit; answer thresholds are certified by fixed-sequence testing on held-out real register
-  strings; evaluation uses fresh registers read once after a frozen pre-registration.
+abstract: A small open-weight model (mmBERT-small, 8-bit ONNX, CPU) that maps a country or US state written
+  as free text in company registers and forms (any language or script, misspelled, abbreviated, historical)
+  to ISO 3166-1 alpha-2 and ISO 3166-2:US codes with calibrated probabilities, and abstains with a short
+  candidate list when a certified error-rate target cannot be met. Training combines Unicode CLDR and
+  Wikidata names, real register strings and generated variants that passed quality gates and a human label
+  audit; answer thresholds are certified by fixed-sequence testing on held-out real register strings;
+  evaluation uses fresh registers read once after a frozen pre-registration.
 keywords:
 - ISO 3166
 - country codes

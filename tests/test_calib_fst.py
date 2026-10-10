@@ -5,6 +5,7 @@ from countrycode import labels
 from countrycode.calib.calibration import (
     fit_temperature,
     fst_threshold,
+    fst_threshold_units,
     min_answered,
     threshold_order,
 )
@@ -85,3 +86,74 @@ def test_fit_split_never_uses_cert_items_for_temperature():
     assert cal.temps[0] == pytest.approx(fit_temperature(fit_c, y))
     assert cal.notes["n_fit"] == 80 and cal.notes["n_cert"] == 80
     assert cal.notes["procedure"] == "fst"
+
+
+def test_units_count_a_repeated_key_once():
+    # 200 distinct keys answered correctly; one wrong key repeated in 4 fields; the item-level test
+    # sees 4 errors in 204, the unit-level one 1 error in 201
+    conf = np.full(204, 0.9)
+    correct = np.r_[np.ones(200), np.zeros(4)].astype(bool)
+    units = [[i] for i in range(200)] + [[200, 201, 202, 203]]
+    lam = fst_threshold_units(conf, correct, units, 0.05, [0.85])
+    assert lam == 0.85
+    assert fst_threshold(conf, correct, 0.05, [0.85]) == 0.85
+
+
+def test_units_remove_the_certificate_that_duplicates_create():
+    # 60 correct keys each repeated 3 times (180 items) + 2 wrong singletons: item level 2/182
+    # certifies 5 %; unit level 2/62 cannot
+    conf = np.full(182, 0.9)
+    correct = np.r_[np.ones(180), np.zeros(2)].astype(bool)
+    units = [[3 * k, 3 * k + 1, 3 * k + 2] for k in range(60)] + [[180], [181]]
+    assert fst_threshold(conf, correct, 0.05, [0.85]) == 0.85
+    assert fst_threshold_units(conf, correct, units, 0.05, [0.85]) is None
+
+
+def test_a_unit_is_answered_when_any_member_is_and_wrong_when_any_answered_member_is():
+    # unit 0: one member answered and right, one unanswered and wrong -> answered, right
+    conf = np.r_[0.95, 0.10, np.full(120, 0.95)]
+    correct = np.r_[True, False, np.ones(120, dtype=bool)]
+    units = [[0, 1]] + [[i] for i in range(2, 122)]
+    assert fst_threshold_units(conf, correct, units, 0.05, [0.9]) == 0.9
+
+
+def test_fit_split_with_units_records_them():
+    rng = np.random.default_rng(3)
+    countries = [c for c in COUNTRY_CLASSES if c != labels.NONE][:20]
+    fit_gold = [_item(i, countries[i % 20]) for i in range(80)]
+    cert_gold = [_item(100 + i, countries[i % 20]) for i in range(80)]
+    c = rng.normal(size=(80, len(COUNTRY_CLASSES)))
+    s = np.zeros((80, len(STATE_CLASSES)))
+    units = [list(range(k, k + 4)) for k in range(0, 80, 4)]
+    cal = fit_split(c, s, fit_gold, c, s, cert_gold, units=units)
+    assert cal.notes["cert_unit"] == "source+normalised key"
+    assert cal.notes["n_cert"] == 80 and cal.notes["n_cert_units"] == 20
+
+
+def test_a_head_with_few_gold_examples_keeps_temperature_one():
+    rng = np.random.default_rng(4)
+    countries = [c for c in COUNTRY_CLASSES if c not in (labels.NONE, "US")][:20]
+    gold = [_item(i, countries[i % 20]) for i in range(80)] + [_item(80, "US-CA")]
+    c = rng.normal(size=(81, len(COUNTRY_CLASSES)))
+    s = 3 * rng.normal(size=(81, len(STATE_CLASSES)))
+    assert fit_split(c, s, gold, c, s, gold).temps[1] != 1.0  # v1.2 behaviour, reproducible
+    cal = fit_split(c, s, gold, c, s, gold, min_temp_examples=30)
+    assert cal.temps[1] == 1.0  # one US-state example cannot fit a temperature
+
+
+def test_fit_domains_split_groups_units_by_source_and_normalised_key():
+    from countrycode.calib.fit import fit_domains_split
+
+    rng = np.random.default_rng(5)
+    countries = [c for c in COUNTRY_CLASSES if c != labels.NONE][:20]
+    fit_gold = [_item(i, countries[i % 20]) for i in range(320)]
+    # 320 cert items, 80 distinct texts ("Österreich" and "OSTERREICH " share a key) in us-co
+    cert_gold = [GoldItem(f"c{i}", "us-co", f"f{i % 4}", "country", "US-CO",
+                          ("Österreich" if i % 4 else "OSTERREICH ") + f" {i // 4}", 1, "calib",
+                          (countries[(i // 4) % 20],), "human", "reviewed_proposal")
+                 for i in range(320)]  # fmt: skip
+    c = rng.normal(size=(320, len(COUNTRY_CLASSES)))
+    s = np.zeros((320, len(STATE_CLASSES)))
+    cset = fit_domains_split(c, s, fit_gold, c, s, cert_gold, units=True)
+    reg = cset.policies["register"]
+    assert reg.notes["n_cert"] == 320 and reg.notes["n_cert_units"] == 80

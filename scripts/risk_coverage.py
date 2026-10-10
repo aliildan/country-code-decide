@@ -19,11 +19,13 @@ from countrycode.real.roles import with_roles
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--part", default="test_v12")
+    ap.add_argument("--results-dir", type=Path, default=Path("results"))
     args = ap.parse_args()
     gold, _ = gold_and_lexicon()
     gold = [g for g in with_roles(gold) if g.split == args.part]
-    preds = load_predictions(Path("data/processed/eval") / f"{args.part}_predictions.jsonl")
-    out = Path("results") / args.part / "risk_coverage.json"
+    prefix = "" if args.results_dir == Path("results") else f"{args.results_dir.name}_"
+    preds = load_predictions(Path("data/processed/eval") / f"{prefix}{args.part}_predictions.jsonl")
+    out = args.results_dir / args.part / "risk_coverage.json"
     out.write_text(json.dumps(curves(preds, gold), indent=1) + "\n")
     print(out, len(gold))
 

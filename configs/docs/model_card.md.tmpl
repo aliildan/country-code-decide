@@ -7,7 +7,7 @@ tags: [country-codes, iso-3166, entity-normalization, selective-prediction, cali
 base_model: jhu-clsp/mmBERT-small
 ---
 
-# CountryCode-Decide (small, v1.2)
+# CountryCode-Decide (small, v1.2.1)
 
 Maps a country or US state written as free text — any language or script, misspellings,
 abbreviations, historical names, register junk — to ISO 3166-1 alpha-2 / ISO 3166-2:US codes with
@@ -40,7 +40,7 @@ uvx --from huggingface_hub hf download aildan/country-code-decide-small --exclud
 from countrycode.infer.pipeline import CountryCoder
 
 coder = CountryCoder.load("models/country-code-decide-small")
-d = coder.code("Untted Klngdom", field="country", domain="register", alpha=0.02)
+d = coder.code("Untted Klngdom", field="country", domain="register", alpha=0.05)
 d.target, d.candidates, d.abstain     # ('GB', ('GB',), False); d.confidence ≈ 0.95
 ```
 
@@ -50,7 +50,8 @@ string: `target` (alpha-2, `US-XX`, `NONE` or `None` = abstain), `country`, `us_
 `confidence`, `candidates` (codes with calibrated probability ≥ 0.05, at most three), `abstain`,
 for an error-rate target `alpha` ({{CERTIFIED}}; `None` always answers). Pass
 `domain="register"` for register and form fields: the certified register calibration applies only
-then.
+then; without a domain the stricter of the two policies applies, which is conservative but not
+itself certified.
 
 ## Files
 
@@ -85,10 +86,11 @@ generated (synthetic)**; no generated string is used for calibration or evaluati
   - `junk`, `regjunk` — strings that are not places: placeholders, dates, numbers, generated
     company names, legal terms, street lines (→ `NONE`).
 
-  Every release passed five quality gates before training: **G1** label correctness (each string
+  Every release the model uses passed the quality gates before training: **G1** label correctness (each string
   checked against every name of every code; strings closer to another code are dropped) plus a
   human audit of 300 random items per release (every item when a release is smaller) with zero
-  label errors required; **G2** realism (edit statistics compared with real typos); **G3**
+  label errors required; **G2** realism (edit statistics compared with real typos — reported, no
+  pass/fail threshold); **G3**
   usefulness (kept only if it improved held-out real strings; the OCR, LLM-paraphrase and
   region generators failed this and are not used); **G4** no overlap with any evaluation string; **G5** reproducibility
   (code, config, seed and source item recorded per string).
@@ -102,14 +104,26 @@ generated (synthetic)**; no generated string is used for calibration or evaluati
 
 Fresh registers never used for training, calibration or model selection (New York, Oregon): every
 distinct string of their jurisdiction and country fields, labelled by exact lexicon match or by a
-human reviewer, read once after a frozen pre-registration.
+human reviewer, read once after a frozen pre-registration (release 1.2). Release 1.2.1 keeps the
+weights and corrects the certificate after an external review, so its numbers below are post-hoc.
 
 {{AT_A_GLANCE}}
 
+{{LABEL_TYPES}}
+
+Automatic labels come from an exact lexicon match, so a lexicon is right on them by construction; on
+the hand-labelled strings the model, the LLM and an exact lexicon with the training context rules are
+about level. {{WHERE_IT_HELPS}}
+
 {{HEADLINE}}
+{{HARD_RISK}}
+
+**The certificate, corrected.** {{CERTIFICATE_NOTE}}
+
 {{TABLE_TEST}}
 
-Pre-registered hypotheses:
+Pre-registered hypotheses of release 1.2, as read (P1 and P2 rest on the item-level certificate
+corrected above):
 
 {{HYPOTHESES}}
 
@@ -117,19 +131,25 @@ Gold labels: {{GOLD_QUALITY}}
 
 Latency and size: {{LATENCY}}.
 
-Browser: {{WEB_PARITY}}.
-
 ## Limitations and risks
 
+- For clean fields an exact lexicon with context rules is as accurate as this model; use the model
+  for what a lexicon cannot read. Its advantage was measured on held-out strings of registers whose
+  other strings were in training; on fresh registers, strings with no exact lexicon match are hard.
+- The certificate holds for strings drawn like the calibration strings (register fields), counted
+  per register and normalised key, each target on its own (with probability ≥ 90 % over the
+  calibration draw); errors concentrate on hard strings. Recalibrate before relying on it for a
+  different source. The curated GBIF domain is much harder than registers for this model, and there
+  a 35B LLM is more accurate.
 - One human reviewer labelled the register strings; the calibration strings were labelled twice by
-  that reviewer, the second time blind (consistency, not inter-annotator agreement).
-- Certified error rates hold for the population they were fitted on; recalibrate before relying on
-  them for a different source. Each target is certified on its own (with probability ≥ 90 % over the
-  calibration draw); the 2 % and 5 % guarantees are not simultaneous. The curated GBIF domain is much harder than registers for this
-  model, and there a 35B LLM is more accurate.
+  that reviewer, the second time blind (consistency, not inter-annotator agreement); test labels
+  were labelled once.
+- {{SCRIPT_SCOPE}}
+- One training seed (13); the usefulness gate compared runs whose spread is about its margin.
 - Ambiguous names are returned as candidate lists; downstream systems must not silently pick one.
-- Known gaps: Canadian province codes in US jurisdiction fields (`ON`, `BC`) are not recognised;
-  `Congo` without context is answered as `CG`; strings with no exact lexicon match are much harder.
+- Known gaps: bare Canadian province codes in US jurisdiction fields (`ON`, `BC`) are not recognised
+  (every real such string is an evaluation string, so the no-overlap gate removed them from the
+  generated province variants); `Congo` without context is answered as `CG`.
 - Not legal advice; keep a person in the loop.
 
 ## Citation

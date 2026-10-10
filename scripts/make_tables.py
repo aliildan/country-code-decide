@@ -27,9 +27,10 @@ LABELS = {
     "model@0.05": "CountryCode-Decide at $\\alpha = 5\\%$",
     "v1_model": "CountryCode-Decide v1 (previous release)",
     "llm_qwen3.5_35b-a3b-q4_K_M": "Qwen3.5-35B-A3B, zero-shot (GPU)",
-    "e5_knn": "multilingual-e5 nearest name",
+    "e5_knn": "multilingual-e5-small nearest name",
     "lexicon_fuzzy": "Lexicon + RapidFuzz",
     "lexicon_exact": "Lexicon, exact match",
+    "lexicon_context": "Lexicon + context rules",
     "ons_style": "ONS-style index + Levenshtein",
     "countrynames": "countrynames (OpenSanctions)",
     "pycountry": "pycountry",
@@ -67,7 +68,14 @@ PREREG = {
 # The owner's first G1 audit (decisions.md 2026-10-10): the releases the v1/v1.1 models used.
 FIRST_AUDIT = ("affix@1", "format@3", "geo@1", "junk@1", "keyboard@1", "llm@1", "llmjunk@1",
                "ocr@1", "pairs@1", "translit@1")  # fmt: skip
-CURVES = ("model", "llm_qwen3.5_35b-a3b-q4_K_M", "e5_knn", "lexicon_fuzzy", "countrynames")
+CURVES = (
+    "model",
+    "llm_qwen3.5_35b-a3b-q4_K_M",
+    "lexicon_context",
+    "e5_knn",
+    "lexicon_fuzzy",
+    "countrynames",
+)
 
 
 def _load(p: Path) -> dict:
@@ -85,7 +93,34 @@ def _num(n: int) -> str:
 
 
 def _release(res: Path) -> dict:
-    return {"version": None, "part": "test", **_load(res / "release.json")}
+    return {
+        "version": None,
+        "part": "test",
+        "preregistered": None,
+        "model_version": None,
+        **_load(res / "release.json"),
+    }
+
+
+def _sibling(res: Path, name: str) -> Path:
+    """A part of the documented release run (posthoc-v1.2.1/<name> for v1.2.1, else <name>)."""
+    own = (res / _release(res)["part"]).parent / name
+    return own if (own / "model.json").exists() else res / name
+
+
+def _cp_upper(k: int, n: int, level: float = 0.95) -> float:
+    """One-sided Clopper–Pearson upper bound for k events in n (bisection on the binomial cdf)."""
+    if n == 0:
+        return math.nan
+
+    def cdf(p: float) -> float:
+        return sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k + 1))
+
+    lo, hi = k / n, 1.0
+    for _ in range(80):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if cdf(mid) > 1 - level else (lo, mid)
+    return hi
 
 
 def _reports(res: Path, part: str) -> dict[str, dict]:
@@ -106,17 +141,21 @@ def macros(res: Path) -> str:
     """\\newcommand per number used in the paper's text."""
     rel = _release(res)
     part = rel["part"]
+    pre_part = rel["preregistered"] or part  # the pre-registered read (v1.2.1 keeps it apart)
     reps = _reports(res, part)
+    pre = _reports(res, pre_part) if pre_part != part else reps
     m = reps["model"]["overall"]
-    h = _load(res / part / "hypotheses.json")
-    op2, op5 = reps["model@0.02"]["overall"], reps["model@0.05"]["overall"]
+    h = _load(res / pre_part / "hypotheses.json")
+    op2, op5 = pre["model@0.02"]["overall"], reps["model@0.05"]["overall"]
     lat = _load(res / f"latency-{rel['version']}.json")
-    trim = _load(res / f"trim-{rel['version']}.json")
+    trim = _load(res / f"trim-{rel['model_version'] or rel['version']}.json")
     gold = _load(res / "real" / "gold_quality.json")
-    web = _load(res / f"web-parity-{rel['version']}.json")
     tr = _load(res / "train" / f"{rel.get('train_run')}.json")
     cal = _load(res / f"calibration-{rel['version']}.json").get("domains", {})
     llm = next(k for k in reps if k.startswith("llm_"))
+    # a run that read the LLM's answers from its cache reports < 1 ms: use the read that called it
+    llm_ms = max(reps[llm].get("latency_ms_per_item") or 0.0,
+                 pre.get(llm, {}).get("latency_ms_per_item") or 0.0)  # fmt: skip
     base = {k: v["overall"]["accuracy"] for k, v in reps.items()
             if k in LABELS and not k.startswith(("model", "llm_", "v1_"))}  # fmt: skip
     best = max(base, key=lambda k: base[k])
@@ -154,8 +193,8 @@ def macros(res: Path) -> str:
         _cmd("POnePValue", f"{h['P1']['p_value_risk_le_2pct']:.3f}"),
         _cmd("AccLLM", _pct(reps[llm]["overall"]["accuracy"])),
         _cmd("LLMCovFive", _pct(reps[llm]["overall"]["coverage_at_risk"]["0.05"], 0)),
-        _cmd("LLMms", f"{reps[llm]['latency_ms_per_item']:.0f}"),
-        _cmd("LLMSlower", f"{reps[llm]['latency_ms_per_item'] / lat['p50_ms']:.0f}"),
+        _cmd("LLMms", f"{llm_ms:.0f}"),
+        _cmd("LLMSlower", f"{llm_ms / lat['p50_ms']:.0f}"),
         _cmd("BestBaseline", LABELS[best]),
         _cmd("AccBest", _pct(base[best])),
         _cmd("AccFuzzy", _pct(base.get("lexicon_fuzzy"))),
@@ -182,11 +221,6 @@ def macros(res: Path) -> str:
         _cmd("TrainSyn", _num(n_syn)),
         _cmd("TrainReal", _num(n_real)),
         _cmd("SynShare", _pct(n_syn / total)),
-        _cmd("WebN", _num(web.get("n", 0))),
-        _cmd("WebAgreeTwo", _pct(web.get("decision_agreement", {}).get("0.02"))),
-        _cmd("WebTop", _pct(web.get("top1_agreement"))),
-        _cmd("WebMeanDp", f"{web.get('mean_abs_dp_top', math.nan):.3f}"),
-        _cmd("WebMaxDp", f"{web.get('max_abs_dp', math.nan):.2f}"),
         _cmd("RegCalibN", _num(cal.get("register", {}).get("n_calib", 0))),
         _cmd("CurCalibN", _num(cal.get("curated", {}).get("n_calib", 0))),
         _cmd("RegLambdaTwo", _lam(cal, "register", "0.02")),
@@ -214,19 +248,105 @@ def macros(res: Path) -> str:
         _cmd("IngestRows", f"{ing.get('rows_covered', 0) / 1e6:.1f}"),  # millions
     ]
     for part_key, prefix in (("test_v11", "VEleven"), ("ood", "Ood"), ("select", "Select")):
-        r = _reports(res, part_key)
+        sib = _sibling(res, part_key)
+        r = {p.stem: _load(p) for p in sorted(sib.glob("*.json")) if "overall" in _load(p)}
         if "model" not in r:
             continue
         lines.append(_cmd(f"{prefix}N", _num(r["model"]["overall"]["n"])))
         lines.append(_cmd(f"{prefix}Acc", _pct(r["model"]["overall"]["accuracy"])))
         if llm in r:
             lines.append(_cmd(f"{prefix}LLM", _pct(r[llm]["overall"]["accuracy"])))
+        if "lexicon_context" in r:
+            lines.append(
+                _cmd(f"{prefix}Context", _pct(r["lexicon_context"]["overall"]["accuracy"]))
+            )
+        nov = r["model"].get("slices", {}).get("lexicon=novel", {})
+        if nov.get("n"):
+            lines.append(_cmd(f"{prefix}NovelN", _num(nov["n"])))
+            lines.append(_cmd(f"{prefix}NovelModel", _pct(nov["accuracy"])))
+            nl = r.get(llm, {}).get("slices", {}).get("lexicon=novel", {})
+            if nl.get("n"):
+                lines.append(_cmd(f"{prefix}NovelLLM", _pct(nl["accuracy"])))
+        f5 = r.get("model@0.05", {}).get("overall", {})
+        if f5:
+            lines.append(_cmd(f"{prefix}FiveAnswered", _pct(f5.get("answered"))))
+            lines.append(_cmd(f"{prefix}FiveRisk", _pct(f5.get("risk_answered"))))
+    lines += _posthoc_macros(res, rel, reps, pre, h, llm, m)
     return "\n".join(lines) + "\n"
+
+
+def _posthoc_macros(res, rel, reps, pre, h, llm, m) -> list[str]:  # noqa: ANN001
+    """Numbers of the external-review fixes (v1.2.1): label types, the context baseline, the
+    unit-level certificate, scope counts."""
+    out = []
+
+    def sl(rep: dict, key: str) -> dict:
+        return rep.get("slices", {}).get(key, {})
+
+    p2 = pre.get("model@0.02", {})
+    for tag, key in (("Hand", "label=reviewed_proposal"), ("Auto", "label=auto_exact")):
+        s2 = sl(p2, key)
+        if s2.get("n"):
+            out.append(_cmd(f"PreTwo{tag}Answered", _num(round(s2["answered"] * s2["n"]))))
+            out.append(_cmd(f"PreTwo{tag}Risk", _pct(s2.get("risk_answered"))))
+        for name, pref in (("model", "Model"), (llm, "LLM"), ("lexicon_context", "Context")):
+            x = sl(reps.get(name, {}), key)
+            if x.get("n"):
+                out.append(_cmd(f"{tag}{pref}", _pct(x["accuracy"])))
+                out.append(_cmd(f"{tag}{pref}Answered", _num(round(x["answered"] * x["n"]))))
+        x = sl(reps.get("model", {}), key)
+        if x.get("n"):
+            out.append(_cmd(f"{tag}N", _num(x["n"])))
+    llm_auto = sl(reps.get(llm, {}), "label=auto_exact")
+    if llm_auto.get("n"):
+        out.append(_cmd("LLMAutoAbstain", _num(round((1 - llm_auto["answered"]) * llm_auto["n"]))))
+    h5 = sl(reps.get("model@0.05", {}), "label=reviewed_proposal")
+    if h5.get("n"):
+        out.append(_cmd("HandFiveAnswered", _num(round(h5["answered"] * h5["n"]))))
+        out.append(_cmd("HandFiveRisk", _pct(h5.get("risk_answered"))))
+    ctx = reps.get("lexicon_context", {}).get("overall", {})
+    if ctx:
+        out += [_cmd("AccContext", _pct(ctx["accuracy"])),
+                _cmd("ContextAnswered", _pct(ctx.get("answered"))),
+                _cmd("ContextRisk", _pct(ctx.get("risk_answered")))]  # fmt: skip
+    cal = _load(res / f"calibration-{rel['version']}.json").get("domains", {})
+    pre_cal = (_load(res / f"calibration-{rel['model_version']}.json").get("domains", {})
+               if rel["model_version"] else cal)  # fmt: skip
+    out += [_cmd("RegLambdaTwoPre", _lam(pre_cal, "register", "0.02")),
+            _cmd("RegLambdaFivePre", _lam(pre_cal, "register", "0.05")),
+            _cmd("RegUnits", _num(cal.get("register", {}).get("notes", {}).get("n_cert_units")
+                                  or 0)),
+            _cmd("CurUnits", _num(cal.get("curated", {}).get("notes", {}).get("n_cert_units")
+                                  or 0))]  # fmt: skip
+    p1 = h.get("P1", {})
+    if p1.get("answered_n"):
+        out.append(_cmd("POneUpper", _pct(_cp_upper(p1["errors"], p1["answered_n"]))))
+    ing = _load(res / "real" / "ingest.json").get("by_source_field", {})
+    pulled = sum(v for k, v in ing.items() if k.startswith(("us-ny/", "us-or/")))
+    if pulled:
+        out.append(_cmd("TestUnscored", _num(pulled - m["n"])))
+    total = other = 0
+    for name in (Path(rel["part"]).name, "test_v11", "ood"):
+        for k, v in _load(_sibling(res, name) / "model.json").get("slices", {}).items():
+            if k.startswith("script="):
+                total += v["n"]
+                other += v["n"] if k not in ("script=LATIN", "script=NONE") else 0
+    out += [_cmd("EvalStrings", _num(total)), _cmd("NonLatin", _num(other))]
+    g = _load(res / "real" / "gold_quality.json").get("by_mode", {}).get("reviewed_proposal", {})
+    if g.get("n"):
+        out += [_cmd("GoldHandN", _num(g["n"])), _cmd("GoldHandDisagree", _num(g["disagree"])),
+                _cmd("GoldHandRate", _pct(g["disagree"] / g["n"]))]  # fmt: skip
+    p4 = h.get("P4", {})
+    if p4:
+        out.append(_cmd("AccBestPre", _pct(p4.get("best_non_llm_accuracy"))))
+    return out
 
 
 def table_predictors(res: Path, part: str) -> str:
     reps = _reports(res, part)
-    rows = [k for k in ORDER if k in reps and k != "model@0.01"]
+    # an operating point with no certified threshold answers nothing; it is not a predictor row
+    silent = {k for k in reps if k.startswith("model@") and reps[k]["overall"].get("answered") == 0}
+    rows = [k for k in ORDER if k in reps and k != "model@0.01" and k not in silent]
     out = [
         "\\begin{tabular}{lrrrrrr}",
         "\\toprule",
@@ -292,7 +412,8 @@ def table_releases(res: Path) -> str:
 
 
 def table_prereg(res: Path) -> str:
-    h = _load(res / _release(res)["part"] / "hypotheses.json")
+    rel = _release(res)
+    h = _load(res / (rel["preregistered"] or rel["part"]) / "hypotheses.json")
     out = ["\\begin{tabular}{l >{\\raggedright\\arraybackslash}p{6.2cm} "
            ">{\\raggedright\\arraybackslash}p{4.6cm} l}", "\\toprule",
            "& Hypothesis & Observed & Result \\\\", "\\midrule"]  # fmt: skip
@@ -317,7 +438,23 @@ def table_prereg(res: Path) -> str:
 
 
 def table_calibration(res: Path) -> str:
-    cal = _load(res / f"calibration-{_release(res)['version']}.json").get("domains", {})
+    rel = _release(res)
+    cal = _load(res / f"calibration-{rel['version']}.json").get("domains", {})
+    if rel["model_version"]:  # v1.2.1: the pre-registered item-level fit beside the unit-level one
+        pre = _load(res / f"calibration-{rel['model_version']}.json").get("domains", {})
+        out = ["\\begin{tabular}{llrrrr}", "\\toprule",
+               "Domain & Certificate counts & $n$ & $\\lambda_{1\\%}$ & $\\lambda_{2\\%}$ & "
+               "$\\lambda_{5\\%}$ \\\\", "\\midrule"]  # fmt: skip
+        for dom in sorted(cal):
+            for label, c, n in (("items (v1.2)", pre.get(dom, {}), pre.get(dom, {}).get("n_calib")),
+                                ("units (v1.2.1)", cal[dom],
+                                 cal[dom].get("notes", {}).get("n_cert_units"))):  # fmt: skip
+                if not c:
+                    continue
+                lam = [_lam({dom: c}, dom, a) for a in ("0.01", "0.02", "0.05")]
+                out.append(f"{dom} & {label} & {_num(n or 0)} & " + " & ".join(lam) + " \\\\")
+        out += ["\\bottomrule", "\\end{tabular}"]
+        return "\n".join(out) + "\n"
     out = ["\\begin{tabular}{lrrrrr}", "\\toprule",
            "Domain & $n_{\\text{calib}}$ & $T_{\\text{country}}$ & $\\lambda_{1\\%}$ & "
            "$\\lambda_{2\\%}$ & $\\lambda_{5\\%}$ \\\\", "\\midrule"]  # fmt: skip
@@ -326,6 +463,28 @@ def table_calibration(res: Path) -> str:
         lam = [("--" if t.get(a) is None else f"{t[a]:.3f}") for a in ("0.01", "0.02", "0.05")]
         out.append(f"{dom} & {_num(c.get('n_calib', 0))} & {c['temps'][0]:.2f} & "
                    + " & ".join(lam) + " \\\\")  # fmt: skip
+    out += ["\\bottomrule", "\\end{tabular}"]
+    return "\n".join(out) + "\n"
+
+
+def table_label_types(res: Path) -> str:
+    """Accuracy (%) by how the gold label was made, on the documented release's test part."""
+    reps = _reports(res, _release(res)["part"])
+    llms = [k for k in reps if k.startswith("llm_")]
+    rows = [k for k in ("model", "model@0.05", *llms, "lexicon_context", "e5_knn", "lexicon_exact")
+            if {"label=auto_exact", "label=reviewed_proposal"}
+            <= set(reps.get(k, {}).get("slices", {}))]  # fmt: skip
+    if not rows:
+        return "% no label-type slices\n"
+    s0 = reps[rows[0]]["slices"]
+    na, nh = s0["label=auto_exact"]["n"], s0["label=reviewed_proposal"]["n"]
+    out = ["\\begin{tabular}{lrrr}", "\\toprule",
+           f"Predictor & Automatic labels ($n={na}$) & Hand-labelled ($n={nh}$) & "
+           "Hand-labelled answered \\\\", "\\midrule"]  # fmt: skip
+    for k in rows:
+        a, h = reps[k]["slices"]["label=auto_exact"], reps[k]["slices"]["label=reviewed_proposal"]
+        out.append(f"{LABELS.get(k, k)} & {_pct(a['accuracy'])} & {_pct(h['accuracy'])} & "
+                   f"{_num(round(h.get('answered', 1.0) * h['n']))} \\\\")  # fmt: skip
     out += ["\\bottomrule", "\\end{tabular}"]
     return "\n".join(out) + "\n"
 
@@ -359,7 +518,7 @@ def curve_csvs(res: Path, part: str) -> dict[str, str]:
             continue
         rows = "".join(f"{100 * x:.2f},{100 * y:.3f}\n"
                        for x, y in zip(c["coverage"], c["risk"], strict=True))  # fmt: skip
-        out[f"{part}-{name.replace('.', '_')}.csv"] = "coverage,risk\n" + rows
+        out[f"{Path(part).name}-{name.replace('.', '_')}.csv"] = "coverage,risk\n" + rows
     return out
 
 
@@ -367,6 +526,7 @@ def outputs(res: Path) -> dict[str, str]:
     part = _release(res)["part"]
     files = {
         "tables/macros.tex": macros(res),
+        "tables/labels.tex": table_label_types(res),
         "tables/test.tex": table_predictors(res, part),
         "tables/slices.tex": table_slices(res, part),
         "tables/releases.tex": table_releases(res),
@@ -375,8 +535,9 @@ def outputs(res: Path) -> dict[str, str]:
         "tables/training.tex": table_training(res),
     }
     for p in ("test_v11", "ood"):
-        if (res / p / "model.json").exists():
-            files[f"tables/{p}.tex"] = table_predictors(res, p)
+        sib = _sibling(res, p)
+        if (sib / "model.json").exists():
+            files[f"tables/{p}.tex"] = table_predictors(res, str(sib.relative_to(res)))
     return files
 
 

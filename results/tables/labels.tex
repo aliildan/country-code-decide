@@ -1,0 +1,12 @@
+\begin{tabular}{lrrr}
+\toprule
+Predictor & Automatic labels ($n=261$) & Hand-labelled ($n=100$) & Hand-labelled answered \\
+\midrule
+CountryCode-Decide (always answers) & 99.2 & 61.0 & 100 \\
+CountryCode-Decide at $\alpha = 5\%$ & 98.1 & 56.0 & 61 \\
+Qwen3.5-35B-A3B, zero-shot (GPU) & 94.3 & 61.0 & 97 \\
+Lexicon + context rules & 99.6 & 63.0 & 62 \\
+multilingual-e5-small nearest name & 100.0 & 37.0 & 100 \\
+Lexicon, exact match & 100.0 & 24.0 & 23 \\
+\bottomrule
+\end{tabular}

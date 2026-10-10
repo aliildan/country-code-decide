@@ -7,11 +7,10 @@ mostly add letters (doubling, a neighbouring key), sometimes drop or swap one.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import yaml
 
+from countrycode.paths import CONFIGS
 from countrycode.synth.framework import (
     MIN_NOISE_KEY,
     PRIORITY_LANGS,
@@ -23,7 +22,7 @@ from countrycode.synth.framework import (
 )
 from countrycode.text import compact_key
 
-CONFIG_PATH = Path("configs/synth/keyboard.yaml")
+CONFIG_PATH = CONFIGS / "synth" / "keyboard.yaml"
 
 LAYOUTS: dict[str, tuple[str, ...]] = {
     "us": ("qwertyuiop", "asdfghjkl", "zxcvbnm"),

@@ -12,16 +12,16 @@ from __future__ import annotations
 import hashlib
 from dataclasses import replace
 from functools import cache
-from pathlib import Path
 
 import yaml
 
 from countrycode.calib.calibration import domain_of
+from countrycode.paths import CONFIGS
 from countrycode.real.gold import GoldItem
 from countrycode.text import compact_key
 
 ROLES = ("train", "select", "calib", "test", "test_seen_v1", "ood", "test_v12")
-HELD_OUT_PATH = Path("configs/held_out_sources.yaml")
+HELD_OUT_PATH = CONFIGS / "held_out_sources.yaml"
 
 
 @cache

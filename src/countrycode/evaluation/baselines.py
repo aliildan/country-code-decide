@@ -1,5 +1,5 @@
 """Non-LLM baselines (plan-02 Task 6, design-01 §7). Every baseline maps one string to a
-`Prediction`; none of them reads the field context. Copyleft libraries (pycountry: LGPL,
+`Prediction`; only `lexicon_context` reads the field context. Copyleft libraries (pycountry: LGPL,
 country_converter: GPL) are imported lazily from the `eval` dependency group and never ship.
 """
 
@@ -45,6 +45,40 @@ class LexiconExact:
 
     def predict(self, items: Sequence[GoldItem]) -> list[Prediction]:
         return [_from_set(self.lexicon.lookup(g.text), 1.0) for g in items]
+
+
+class LexiconContext:
+    """Exact lexicon lookup plus the context rules that label the training strings (v1.2.1, external
+    review): a Canadian province code in a US jurisdiction field is Canada; a set that mixes
+    countries and US states is the state in a US jurisdiction field and the country in a country or
+    nationality field; a set that contains the register's own place is that place. Anything still
+    ambiguous abstains with the set."""
+
+    name = "lexicon_context"
+
+    def __init__(self, lexicon: Lexicon) -> None:
+        self.lexicon = lexicon
+
+    def _one(self, g: GoldItem) -> Prediction:
+        from countrycode.train.dataset import _collision, _context_override
+
+        field, reg = g.field_kind, (g.register_country or "unknown").upper()
+        if override := _context_override(g.text, field, reg):
+            return _from_set(set(override), 1.0)
+        targets = self.lexicon.lookup(g.text)
+        if len(targets) > 1 and (col := _collision(sorted(targets))):
+            countries, states = col
+            us = reg == "US" or reg.startswith("US-")
+            if field == "jurisdiction" and us:
+                return _from_set(set(states), 1.0)
+            if field in ("country", "nationality"):
+                return _from_set(set(countries), 1.0)
+        if len(targets) > 1 and reg in targets:
+            return _from_set({reg}, 1.0)
+        return _from_set(targets, 1.0)
+
+    def predict(self, items: Sequence[GoldItem]) -> list[Prediction]:
+        return [self._one(g) for g in items]
 
 
 class LexiconFuzzy:

@@ -17,9 +17,10 @@ import httpx
 
 from countrycode import labels
 from countrycode.evaluation.harness import Prediction
+from countrycode.paths import CONFIGS
 from countrycode.real.gold import GoldItem
 
-PROMPT_PATH = Path("configs/prompts/llm_baseline.txt")
+PROMPT_PATH = CONFIGS / "prompts" / "llm_baseline.txt"
 CACHE_DIR = Path("data/raw/llm")
 LOG_PATH = Path("runs/llm/log.jsonl")
 OLLAMA = "http://127.0.0.1:11434"

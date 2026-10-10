@@ -54,9 +54,6 @@ def _results(tmp_path: Path) -> Path:
                                   "tokens_checked": 511980})  # fmt: skip
     _w(r / "real" / "gold_quality.json", {"n": 592, "agreement": 0.9916, "disagree": 5,
                                           "gold_error_upper_95": 0.0177})  # fmt: skip
-    _w(r / "web-parity-small-v9.json", {"n": 3570, "top1_agreement": 0.9894,
-       "decision_agreement": {"0.02": 0.9986}, "mean_abs_dp_top": 0.0055,
-       "max_abs_dp": 0.0828})  # fmt: skip
     _w(
         r / "train" / "run-x.json",
         {
@@ -102,11 +99,11 @@ def test_macros_carry_the_papers_numbers(tmp_path):
                      "\\newcommand{\\TestSeen}{327}", "\\newcommand{\\AccNovel}{21.2}",
                      "\\newcommand{\\AccBest}{82.5}", "\\newcommand{\\LLMSlower}{29}",
                      "\\newcommand{\\SizeMB}{74.7}", "\\newcommand{\\VocabNew}{68{,}525}",
-                     "\\newcommand{\\SynShare}{31.2}", "\\newcommand{\\WebAgreeTwo}{99.9}",
+                     "\\newcommand{\\SynShare}{31.2}",
                      "\\newcommand{\\RegLambdaTwo}{0.827}",
                      "\\newcommand{\\GoldUpper}{1.8}"):  # fmt: skip
         assert expected in m, expected
-    assert "multilingual-e5 nearest name" in m and "v1_model" not in m
+    assert "multilingual-e5-small nearest name" in m and "v1_model" not in m
 
 
 def test_predictor_table_orders_rows_and_marks_cached_llm_latency(tmp_path):
@@ -169,3 +166,98 @@ def test_slice_size_and_release_count_macros(tmp_path):
     out = make_tables.macros(r)
     assert "\\newcommand{\\TestAmbigN}{4}" in out and "\\newcommand{\\TestNoneN}{4}" in out
     assert "\\newcommand{\\ModelReleases}{1}" in out  # releases used by the documented run
+
+
+def _posthoc(tmp_path):
+    """v1.2.1 layout: the pre-registered read in test_v12, the release run in posthoc-v1.2.1/."""
+    r = _results(tmp_path)
+    _w(r / "release.json", {"version": "small-v1.2.1", "part": "posthoc-v1.2.1/test_v12",
+                            "preregistered": "test_v12", "hypotheses": "v12",
+                            "train_run": "run-x", "model_version": "small-v9"})  # fmt: skip
+    pre = r / "test_v12"
+    m2 = json.loads((pre / "model@0.02.json").read_text())
+    m2["slices"] = {"label=auto_exact": {"n": 261, "answered": 255 / 261, "risk_answered": 0.0},
+                    "label=reviewed_proposal": {"n": 100, "answered": 0.54,
+                                                "risk_answered": 3 / 54}}  # fmt: skip
+    (pre / "model@0.02.json").write_text(json.dumps(m2))
+    ph = r / "posthoc-v1.2.1" / "test_v12"
+    ph.mkdir(parents=True)
+    lab = {"label=auto_exact": {"n": 261, "accuracy": 259 / 261, "answered": 1.0},
+           "label=reviewed_proposal": {"n": 100, "accuracy": 0.61, "answered": 1.0}}  # fmt: skip
+    for f in pre.glob("*.json"):
+        d = json.loads(f.read_text())
+        d.setdefault("slices", {}).update(lab)
+        (ph / f.name).write_text(json.dumps(d))
+    _w(ph / "model@0.05.json", {"predictor": "model@0.05", "latency_ms_per_item": 4.1,
+       "slices": {"label=reviewed_proposal": {"n": 100, "answered": 0.61, "risk_answered": 5 / 61,
+                                              "accuracy": 0.56}},
+       "overall": {"n": 361, "accuracy": 0.864, "answered": 0.878, "risk_answered": 0.025,
+                   "none_false_accept": 0.0}})  # fmt: skip
+    _w(
+        ph / "lexicon_context.json",
+        {
+            "predictor": "lexicon_context",
+            "latency_ms_per_item": 0.0,
+            "slices": {
+                "label=auto_exact": {"n": 261, "accuracy": 260 / 261, "answered": 1.0},
+                "label=reviewed_proposal": {"n": 100, "accuracy": 0.63, "answered": 0.62},
+            },
+            "overall": {"n": 361, "accuracy": 0.895, "answered": 0.895, "risk_answered": 0.015},
+        },
+    )
+    _w(r / "calibration-small-v1.2.1.json", {"domains": {
+        "register": {"temps": [1.33, 1.67], "n_calib": 592, "notes": {"n_cert_units": 318},
+                     "thresholds": {"0.01": None, "0.02": None, "0.05": 0.7621}},
+        "curated": {"temps": [2.29, 1.0], "n_calib": 2915, "notes": {"n_cert_units": 2796},
+                    "thresholds": {"0.01": None, "0.02": None, "0.05": 0.7327}}}})  # fmt: skip
+    _w(r / "latency-small-v1.2.1.json", {"p50_ms": 4.09, "p95_ms": 5.07, "batch_ms_per_item": 5.9,
+                                         "int8_bytes": 74_731_597})  # fmt: skip
+    _w(
+        r / "real" / "ingest.json",
+        {
+            "items": 14011,
+            "rows_covered": 47671185,
+            "by_source_field": {
+                "us-ny/country": 156,
+                "us-ny/jurisdiction": 95,
+                "us-or/jurisdiction": 117,
+            },
+        },
+    )
+    return r
+
+
+def test_posthoc_macros_keep_preregistered_and_release_numbers_apart(tmp_path):
+    m = make_tables.macros(_posthoc(tmp_path))
+    for expected in ("\\newcommand{\\POneAnsweredN}{309}",
+                     "\\newcommand{\\PreTwoHandAnswered}{54}",
+                     "\\newcommand{\\PreTwoHandRisk}{5.6}",
+                     "\\newcommand{\\PreTwoAutoAnswered}{255}",
+                     "\\newcommand{\\RegLambdaTwoPre}{0.827}",
+                     "\\newcommand{\\RegLambdaFive}{0.762}",
+                     "\\newcommand{\\RegUnits}{318}", "\\newcommand{\\OpFiveAnswered}{87.8}",
+                     "\\newcommand{\\OpFiveRisk}{2.5}", "\\newcommand{\\HandFiveRisk}{8.2}",
+                     "\\newcommand{\\AccContext}{89.5}", "\\newcommand{\\HandModel}{61.0}",
+                     "\\newcommand{\\HandContext}{63.0}", "\\newcommand{\\TestUnscored}{7}",
+                     "\\newcommand{\\POneUpper}{2.5}"):  # fmt: skip
+        assert expected in m, expected
+
+
+def test_label_type_and_calibration_tables_for_a_posthoc_release(tmp_path):
+    r = _posthoc(tmp_path)
+    lt = make_tables.table_label_types(r)
+    assert "CountryCode-Decide (always answers) & 99.2 & 61.0 & 100" in lt
+    assert "Lexicon + context rules & 99.6 & 63.0 & 62" in lt
+    cal = make_tables.table_calibration(r)
+    assert "register & items (v1.2) & 592 & -- & 0.827 & 0.576" in cal
+    assert "register & units (v1.2.1) & 318 & -- & -- & 0.762" in cal
+    assert "tables/labels.tex" in make_tables.outputs(r)
+
+
+def test_operating_points_that_answer_nothing_are_left_out(tmp_path):
+    r = _posthoc(tmp_path)
+    _w(r / "posthoc-v1.2.1" / "test_v12" / "model@0.02.json", {
+        "predictor": "model@0.02", "latency_ms_per_item": 4.1,
+        "overall": {"n": 361, "accuracy": 0.011, "answered": 0.0}})  # fmt: skip
+    t = make_tables.table_predictors(r, "posthoc-v1.2.1/test_v12")
+    assert "alpha = 2" not in t and "alpha = 5" in t

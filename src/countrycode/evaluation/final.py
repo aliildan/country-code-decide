@@ -75,6 +75,16 @@ class LegacyRegister:
         return self.source.probs([v1(g) for g in items])
 
 
+def output_paths(results_dir: Path, part: str) -> tuple[Path, Path, bool]:
+    """(report dir, private per-item file, whether this run documents the release). Only the
+    default results/ run writes results/release.json; a post-hoc run (v1.2.1) writes its own
+    directory and never touches the pre-registered read."""
+    default = results_dir == Path("results")
+    prefix = "" if default else f"{results_dir.name}_"
+    per_item = Path("data/processed/eval") / f"{prefix}{part}_predictions.jsonl"
+    return results_dir / part, per_item, default
+
+
 class CalibratedPredictor:
     def __init__(
         self, source: ProbSource, cal: Calibration, alpha: float | None, name: str
@@ -256,6 +266,8 @@ def main() -> None:
     ap.add_argument("--v1-bundle", type=Path, help="v1 bundle evaluated as `v1_model` (R4)")
     ap.add_argument("--v12", action="store_true", help="v1.2 roles; judged part = test_v12")
     ap.add_argument("--trim", type=Path, help="v1.2 trim record (results/trim-<version>.json)")
+    ap.add_argument("--results-dir", type=Path, default=Path("results"),
+                    help="post-hoc runs write here (e.g. results/posthoc-v1.2.1)")  # fmt: skip
     args = ap.parse_args()
     if args.rejudge:
         hyp = rejudge(args.part, args.h4_dev_gain, args.v11)
@@ -281,19 +293,18 @@ def main() -> None:
     preds += make_baselines(lx, None)
     if args.llm:
         preds.append(LLMPredictor(args.llm))
-    out = Path("results") / args.part
+    out, per_item, documents_release = output_paths(args.results_dir, args.part)
     items = [g for g in gold if g.split == args.part]
     from countrycode.evaluation.slices import noise_kind
 
     kinds = {g.item_id: noise_kind(g.text, g.targets, lx) for g in items}
     reports = {}
-    per_item = Path("data/processed/eval") / f"{args.part}_predictions.jsonl"
     per_item.parent.mkdir(parents=True, exist_ok=True)
     with per_item.open("w", encoding="utf-8") as f:
         for p in preds:
             reports[p.name] = evaluate(
                 p, gold, args.part, allow_test=args.allow_test, seen_keys=seen,
-                prereg_path=prereg_path, kinds=kinds,
+                prereg_path=prereg_path, kinds=kinds, out_dir=args.results_dir,
             )  # fmt: skip
             # private per-item record for plots and examples (data/ is never published)
             for g, pr in zip(items, p.predict(items), strict=True):
@@ -316,7 +327,8 @@ def main() -> None:
         version = Path(args.bundle).name.removeprefix("countrycode-")  # names latency-<v>.json
         release = {"version": version, "part": "test_v12", "hypotheses": "v12",
                    "train_run": meta.get("train_run")}  # fmt: skip
-        Path("results/release.json").write_text(json.dumps(release, indent=1) + "\n")
+        if documents_release:
+            Path("results/release.json").write_text(json.dumps(release, indent=1) + "\n")
     elif args.v11:
         hyp = judge_v11(reports, args.cpu_p50_ms)
     else:

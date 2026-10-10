@@ -43,9 +43,9 @@ def quantize_int8(src: Path, dst: Path) -> Path:
 def quantize_weights_only(src: Path, dst: Path, block_size: int = 32) -> Path:
     """int8 embedding table (dynamic Gather quantisation, a weight-only lookup) and 8-bit
     MatMulNBits with accuracy_level 4: onnxruntime's CPU kernels then quantise the activations
-    to int8 per block, while backends without int8 kernels (onnxruntime-web/wasm) compute in fp32
-    (scripts/web_parity.py measures the gap). Dynamic int8 quantisation of every op degraded
-    argmax agreement to ~88–92 % on dev; this keeps ~99 %."""
+    to int8 per block (the certificate is computed on this CPU path; a backend without int8
+    kernels computes in fp32 and gives slightly different probabilities). Dynamic int8
+    quantisation of every op degraded argmax agreement to ~88–92 % on dev; this keeps ~99 %."""
     import onnx
     from onnxruntime.quantization import QuantType, quantize_dynamic
     from onnxruntime.quantization import matmul_nbits_quantizer as mq

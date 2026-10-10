@@ -15,10 +15,11 @@ from typing import cast
 from countrycode import labels
 from countrycode.http import CachedClient
 from countrycode.lexicon.types import AliasKind, AliasRow, Overrides
+from countrycode.paths import CONFIGS
 
 ENDPOINT = "https://query.wikidata.org/sparql"
 CACHE_DIR = Path("data/raw/wikidata")
-OVERRIDES_PATH = Path("configs/lexicon/overrides.yaml")
+OVERRIDES_PATH = CONFIGS / "lexicon" / "overrides.yaml"
 _HEADERS = {"Accept": "application/sparql-results+json"}
 
 _NAME_UNION = """

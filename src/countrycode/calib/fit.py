@@ -24,6 +24,7 @@ from countrycode.calib.calibration import (
     domain_of,
     fit_temperature,
     fst_threshold,
+    fst_threshold_units,
     ltt_threshold,
     softmax_t,
     threshold_order,
@@ -79,14 +80,18 @@ def logits(model, tok, items: Sequence[GoldItem], max_len: int, batch: int = 512
 
 
 def _temperatures(
-    c_logits: np.ndarray, s_logits: np.ndarray, gold: Sequence[GoldItem]
+    c_logits: np.ndarray, s_logits: np.ndarray, gold: Sequence[GoldItem], min_examples: int = 0
 ) -> tuple[float, float, int]:
+    """One temperature per head; a head with fewer than `min_examples` gold examples keeps T = 1
+    (v1.2.1: the curated domain had one US-state example)."""
     c_idx = {c: i for i, c in enumerate(COUNTRY_CLASSES)}
     s_idx = {s: i for i, s in enumerate(STATE_CLASSES)}
     hc = [(i, c_idx[c]) for i, g in enumerate(gold) if (c := head_labels(g)[0]) is not None]
     hs = [(i, s_idx[s]) for i, g in enumerate(gold) if (s := head_labels(g)[1]) is not None]
-    tc = fit_temperature(c_logits[[i for i, _ in hc]], np.array([y for _, y in hc]))
-    ts = fit_temperature(s_logits[[i for i, _ in hs]], np.array([y for _, y in hs])) if hs else 1.0
+    tc = (fit_temperature(c_logits[[i for i, _ in hc]], np.array([y for _, y in hc]))
+          if len(hc) >= max(min_examples, 1) else 1.0)  # fmt: skip
+    ts = (fit_temperature(s_logits[[i for i, _ in hs]], np.array([y for _, y in hs]))
+          if len(hs) >= max(min_examples, 1) else 1.0)  # fmt: skip
     return tc, ts, len(hs)
 
 
@@ -128,14 +133,23 @@ def fit_split(
     cert_c: np.ndarray,
     cert_s: np.ndarray,
     cert_gold: Sequence[GoldItem],
+    units: Sequence[Sequence[int]] | None = None,
+    min_temp_examples: int = 0,
 ) -> Calibration:
     """v1.2 procedure (design-02 §1): temperatures and the fixed-sequence order from the fitting
-    split; thresholds certified by fixed-sequence testing on the certification split only."""
-    tc, ts, n_state = _temperatures(fit_c, fit_s, fit_gold)
+    split; thresholds certified by fixed-sequence testing on the certification split only.
+    v1.2.1: with `units` (index groups of one source + normalised key) the test counts units, not
+    items (fst_threshold_units)."""
+    tc, ts, n_state = _temperatures(fit_c, fit_s, fit_gold, min_temp_examples)
     _, fit_conf, _ = _scored(fit_c, fit_s, fit_gold, tc, ts)
     probs, conf, correct = _scored(cert_c, cert_s, cert_gold, tc, ts)
-    orders = {str(a): threshold_order(fit_conf, len(cert_gold), a) for a in ALPHAS}
-    thresholds = {str(a): fst_threshold(conf, correct, a, orders[str(a)]) for a in ALPHAS}
+    n_cert = len(units) if units is not None else len(cert_gold)
+    orders = {str(a): threshold_order(fit_conf, n_cert, a) for a in ALPHAS}
+    if units is None:
+        thresholds = {str(a): fst_threshold(conf, correct, a, orders[str(a)]) for a in ALPHAS}
+    else:
+        thresholds = {str(a): fst_threshold_units(conf, correct, units, a, orders[str(a)])
+                      for a in ALPHAS}  # fmt: skip
     golds = [gold_indices(g, r) for g, r in zip(cert_gold, probs, strict=True)]
     return Calibration(
         temps=(tc, ts),
@@ -150,6 +164,11 @@ def fit_split(
             "n_state_temp": n_state,
             "orders": orders,
             "cert_accuracy_answer_all": float(correct.mean()),
+            **(
+                {"cert_unit": "source+normalised key", "n_cert_units": len(units)}
+                if units is not None
+                else {}
+            ),
         },
     )
 
@@ -162,9 +181,19 @@ def fit_domains_split(
     cert_s: np.ndarray,
     cert_gold: Sequence[GoldItem],
     min_items: int = 300,
+    units: bool = False,
+    min_temp_examples: int = 0,
 ) -> CalibrationSet:
     """`fit_split` per domain with at least `min_items` certification items and some fitting
-    items; a pooled policy when no domain qualifies."""
+    items; a pooled policy when no domain qualifies. `units`: certify over (source, normalised
+    key) units (v1.2.1)."""
+    from countrycode.text import compact_key
+
+    def unit_groups(gold: Sequence[GoldItem]) -> list[list[int]]:
+        out: dict[tuple[str, str], list[int]] = {}
+        for i, g in enumerate(gold):
+            out.setdefault((g.source, compact_key(g.text)), []).append(i)
+        return list(out.values())
 
     def groups(gold: Sequence[GoldItem]) -> dict[str, list[int]]:
         out: dict[str, list[int]] = {}
@@ -178,8 +207,11 @@ def fit_domains_split(
     for d, ci in sorted(gc.items()):
         fi = gf.get(d, [])
         if len(ci) >= min_items and fi:
+            cg = [cert_gold[i] for i in ci]
             policies[d] = fit_split(fit_c[fi], fit_s[fi], [fit_gold[i] for i in fi],
-                                    cert_c[ci], cert_s[ci], [cert_gold[i] for i in ci])  # fmt: skip
+                                    cert_c[ci], cert_s[ci], cg,
+                                    units=unit_groups(cg) if units else None,
+                                    min_temp_examples=min_temp_examples)  # fmt: skip
     if not policies:
         policies["pooled"] = fit_split(fit_c, fit_s, fit_gold, cert_c, cert_s, cert_gold)
     return CalibrationSet(policies)
@@ -234,6 +266,9 @@ def main() -> None:
     ap.add_argument(
         "--v12", action="store_true", help="v1.2: fit on role select, certify on role calib (FST)"
     )
+    ap.add_argument("--units", action="store_true",
+                    help="v1.2.1: certify over (source, normalised key) units; heads with < 30 "
+                    "gold examples keep T = 1")  # fmt: skip
     args = ap.parse_args()
     gold, _ = gold_and_lexicon()
     if args.v12:
@@ -253,11 +288,15 @@ def main() -> None:
             fc, fs = logits(model, tok, fit_items, meta["config"]["max_len"])
             cc, cs = logits(model, tok, cert_items, meta["config"]["max_len"])
             out = args.run / "calibration.json"
-        cset = fit_domains_split(fc, fs, fit_items, cc, cs, cert_items, args.min_items)
+        cset = fit_domains_split(
+            fc, fs, fit_items, cc, cs, cert_items, args.min_items,
+            units=args.units, min_temp_examples=30 if args.units else 0,
+        )  # fmt: skip
         cset.save(out)
         for d, cal in cset.policies.items():
             print(json.dumps({"domain": d, "n_fit": cal.notes["n_fit"], "n_cert": cal.n_calib,
-                              "temps": cal.temps, "thresholds": cal.thresholds}))  # fmt: skip
+                              "n_units": cal.notes.get("n_cert_units"), "temps": cal.temps,
+                              "thresholds": cal.thresholds}))  # fmt: skip
         return
     if args.v11:
         from countrycode.real.roles import with_roles

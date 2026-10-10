@@ -18,6 +18,7 @@ def make_baselines(lx: Lexicon, only: set[str] | None) -> list[Predictor]:
     factories = {
         "lexicon_exact": lambda: b.LexiconExact(lx),
         "lexicon_fuzzy": lambda: b.LexiconFuzzy(lx),
+        "lexicon_context": lambda: b.LexiconContext(lx),
         "ons_style": lambda: b.OnsStyle(lx),
         "countrynames": b.CountryNames,
         "pycountry": b.PyCountry,

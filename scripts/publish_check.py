@@ -30,7 +30,7 @@ PUBLIC_FILES = {
     ".gitignore",
     ".python-version",
 }
-PUBLIC_DIRS = ("src/", "configs/", "scripts/", "server/", "eval/", "results/", "tests/", "web/")
+PUBLIC_DIRS = ("src/", "configs/", "scripts/", "server/", "eval/", "results/", "tests/")
 
 FORBIDDEN_PATH = re.compile(
     r"^(?:CLAUDE\.md$|docs/|notes/|secrets/|data/|runs/)|(?:^|/)(?:data|secrets)/"

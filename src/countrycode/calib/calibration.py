@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 
 from countrycode.evaluation.harness import Prediction
+from countrycode.paths import CONFIGS
 
 ALPHAS = (0.01, 0.02, 0.05)
 LAMBDA_GRID = tuple(
@@ -121,6 +122,33 @@ def fst_threshold(
     return best
 
 
+def fst_threshold_units(
+    conf: np.ndarray,
+    correct: np.ndarray,
+    units: Sequence[Sequence[int]],
+    alpha: float,
+    order: Sequence[float],
+    delta: float = 0.1,
+) -> float | None:
+    """Fixed-sequence testing over units instead of items (v1.2.1). Items sharing a source and a
+    normalised key are one unit: the binomial test needs independent draws, and the same string in
+    several fields of a register is not one. A unit is answered when any member is answered and
+    wrong when any answered member is wrong."""
+    best = None
+    for lam in order:
+        answered = conf >= lam
+        n = errors = 0
+        for u in units:
+            hit = [i for i in u if answered[i]]
+            if hit:
+                n += 1
+                errors += int(not all(correct[i] for i in hit))
+        if n == 0 or _binom_cdf(errors, n, alpha) > delta:
+            break
+        best = float(lam)
+    return best
+
+
 def _mass_to_cover(row: np.ndarray, gold: set[int]) -> float:
     order = np.argsort(-row)
     mass = 0.0
@@ -200,7 +228,7 @@ def decide(row: np.ndarray, cal: Calibration, alpha: float, targets: Sequence[st
     return Prediction(None, cands, conf)
 
 
-DOMAINS_PATH = Path("configs/domains.yaml")
+DOMAINS_PATH = CONFIGS / "domains.yaml"
 
 
 @cache

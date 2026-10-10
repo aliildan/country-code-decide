@@ -11,13 +11,14 @@ from typing import cast
 import yaml
 
 from countrycode.http import CachedClient
+from countrycode.paths import CONFIGS
 from countrycode.real.bulk import brreg_country_values, ch_country_values, register_code_labels
 from countrycode.real.gbif import parse_gbif_tsv
 from countrycode.real.items import ITEMS_PATH, FieldKind, RealItem, read_items, write_items
 from countrycode.real.socrata import fetch_socrata_values
 from countrycode.real.splits import check_splits, read_manifest, write_manifest
 
-CONFIG = Path("configs/real_sources.yaml")
+CONFIG = CONFIGS / "real_sources.yaml"
 CACHE = Path("data/raw/real")
 STATS = Path("results/real/ingest.json")
 PRESET_LABELS = Path("data/interim/real/preset_labels.jsonl")

@@ -67,3 +67,30 @@ def test_e5_knn_with_fake_embedder():
 
     p = E5Knn(LX, embed_fn=embed, cache=None).predict([g("Austria"), g("Austrija")])
     assert p[0].target == "AT" and p[1].target == "AT" and p[1].confidence < 1.0
+
+
+LXC = build_lexicon(
+    [R("Delaware", "US-DE"), R("Austria", "AT"), R("Georgia", "GE"), R("Georgia", "US-GA"),
+     R("Liverpool", "GB"), R("Liverpool", "AU"), *code_rows()], Overrides()
+)  # fmt: skip
+
+
+def gc(text, field, reg):
+    return GoldItem("i", "s", "f", field, reg, text, 1, "dev", ("AT",), "x", "y")
+
+
+def test_lexicon_context_applies_the_training_context_rules():
+    from countrycode.evaluation.baselines import LexiconContext
+
+    p = LexiconContext(LXC).predict([
+        gc("CA", "jurisdiction", "US-NY"),    # country/state collision, US jurisdiction → state
+        gc("CA", "country", "US-NY"),         # country field → the country
+        gc("Georgia", "jurisdiction", "US"),
+        gc("Georgia", "unknown", "unknown"),  # context does not decide → the set, abstain
+        gc("ON", "jurisdiction", "US-OR"),    # Canadian province code in a US jurisdiction field
+        gc("Liverpool", "country", "GB"),     # a set member that is the register's own country
+        gc("Austria", "country", "unknown"),
+    ])  # fmt: skip
+    assert [x.target for x in p] == ["US-CA", "CA", "US-GA", None, "CA", "GB", "AT"]
+    assert set(p[3].candidates) == {"GE", "US-GA"}
+    assert LexiconContext.name == "lexicon_context"

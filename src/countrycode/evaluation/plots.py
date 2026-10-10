@@ -20,10 +20,11 @@ from countrycode.real.gold import GoldItem
 
 SURFACE, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e0"
 SERIES = {  # fixed order: the model first, never re-coloured by rank
-    "model": ("#2a78d6", "CountryCode-Decide (small, ~150 MB)"),
+    "model": ("#2a78d6", "CountryCode-Decide (small)"),
     "llm_qwen3.5_35b-a3b-q4_K_M": ("#eb6834", "Qwen3.5-35B LLM (zero-shot)"),
     "lexicon_fuzzy": ("#1baf7a", "CLDR lexicon + fuzzy match"),
-    "e5_knn": ("#eda100", "multilingual-e5 nearest name"),
+    "e5_knn": ("#eda100", "multilingual-e5-small nearest name"),
+    "lexicon_context": ("#7f5fb8", "lexicon + context rules"),
     "countrynames": ("#e87ba4", "countrynames (OpenSanctions)"),
 }
 

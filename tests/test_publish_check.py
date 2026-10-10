@@ -33,5 +33,5 @@ def test_secret_detected():
 
 
 def test_public_allow_list():
-    assert pc.is_public("web/index.html") and pc.is_public("NOTICE")
+    assert pc.is_public("NOTICE") and not pc.is_public("web/index.html")  # browser demo removed
     assert not pc.is_public("docs/a.md")

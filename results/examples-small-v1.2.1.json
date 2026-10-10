@@ -1,0 +1,193 @@
+{
+ "bundle": "countrycode-small-v1.2.1",
+ "alpha": 0.05,
+ "domain": "register",
+ "examples": [
+  {
+   "text": "Østerrike",
+   "field": "country",
+   "register_country": "NO",
+   "target": "AT",
+   "name": "Austria",
+   "confidence": 0.9949940552419707,
+   "candidates": [
+    "AT"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "Untted Klngdom",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "GB",
+   "name": "United Kingdom",
+   "confidence": 0.9478788446932842,
+   "candidates": [
+    "GB"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "England and Whales",
+   "field": "country",
+   "register_country": "GB",
+   "target": "GB",
+   "name": "United Kingdom",
+   "confidence": 0.9582107009444345,
+   "candidates": [
+    "GB"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "BRITHISH VIRGIN ISLANDS",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "VG",
+   "name": "British Virgin Islands",
+   "confidence": 0.9773499829737445,
+   "candidates": [
+    "VG"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "10250 THAILAND",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "TH",
+   "name": "Thailand",
+   "confidence": 0.9998211135107051,
+   "candidates": [
+    "TH"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "Nederländerna",
+   "field": "country",
+   "register_country": "SE",
+   "target": "NL",
+   "name": "Netherlands",
+   "confidence": 0.9935461437794496,
+   "candidates": [
+    "NL"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "中华人民共和国",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "CN",
+   "name": "China",
+   "confidence": 0.8778566745925498,
+   "candidates": [
+    "CN"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "W. Germany",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "DE",
+   "name": "Germany",
+   "confidence": 0.999471152851813,
+   "candidates": [
+    "DE"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "Calif",
+   "field": "jurisdiction",
+   "register_country": "US",
+   "target": "US-CA",
+   "name": "California",
+   "confidence": 0.9740961480137053,
+   "candidates": [
+    "US-CA"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "Georgia",
+   "field": "jurisdiction",
+   "register_country": "US",
+   "target": "US-GA",
+   "name": "Georgia",
+   "confidence": 0.9302854168449738,
+   "candidates": [
+    "US-GA",
+    "GE"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "Georgia",
+   "field": "unknown",
+   "register_country": "unknown",
+   "target": null,
+   "name": null,
+   "confidence": 0.750108251627751,
+   "candidates": [
+    "GE",
+    "US-GA"
+   ],
+   "abstain": true
+  },
+  {
+   "text": "Europe",
+   "field": "country",
+   "register_country": "unknown",
+   "target": "NONE",
+   "name": "not a country or US state",
+   "confidence": 0.9989970721421806,
+   "candidates": [
+    "NONE"
+   ],
+   "abstain": false
+  },
+  {
+   "text": "n/a",
+   "field": "country",
+   "register_country": "unknown",
+   "target": null,
+   "name": null,
+   "confidence": 0.11764241138602587,
+   "candidates": [
+    "NE",
+    "NONE",
+    "ZA"
+   ],
+   "abstain": true
+  },
+  {
+   "text": "Deutchland",
+   "field": "country",
+   "register_country": "unknown",
+   "target": null,
+   "name": null,
+   "confidence": 0.467798386359168,
+   "candidates": [
+    "DE",
+    "US-SD"
+   ],
+   "abstain": true
+  },
+  {
+   "text": "Czechoslovakia",
+   "field": "country",
+   "register_country": "unknown",
+   "target": null,
+   "name": null,
+   "confidence": 0.4990569026054911,
+   "candidates": [
+    "CZ",
+    "SK"
+   ],
+   "abstain": true
+  }
+ ]
+}

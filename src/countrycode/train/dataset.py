@@ -21,9 +21,10 @@ import numpy as np
 import yaml
 
 from countrycode import labels
+from countrycode.paths import CONFIGS
 from countrycode.text import compact_key
 
-RULES_PATH = Path("configs/context_rules.yaml")
+RULES_PATH = CONFIGS / "context_rules.yaml"
 NO_STATE = "NO_STATE"
 COUNTRY_CLASSES: tuple[str, ...] = (*labels.countries(), labels.NONE)
 STATE_CLASSES: tuple[str, ...] = (*labels.us_states(), NO_STATE)

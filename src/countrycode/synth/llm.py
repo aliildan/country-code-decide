@@ -18,13 +18,14 @@ from pathlib import Path
 import numpy as np
 
 from countrycode import labels
+from countrycode.paths import CONFIGS
 from countrycode.synth.framework import SHARED_ISLAND, BaseAlias, is_latin
 
 MODEL = "qwen3.5:35b-a3b-q4_K_M"  # Apache-2.0 (Qwen); local Ollama
 CACHE_PATH = Path("data/interim/synth/llm_variants.jsonl")
 LOG_PATH = Path("runs/llm/generation_log.jsonl")
-PROMPT_TARGET = Path("configs/prompts/llm_variants.txt")
-PROMPT_JUNK = Path("configs/prompts/llm_junk.txt")
+PROMPT_TARGET = CONFIGS / "prompts" / "llm_variants.txt"
+PROMPT_JUNK = CONFIGS / "prompts" / "llm_junk.txt"
 JUNK_KEY = "__junk__"
 # Seeded sampling: greedy decoding loops on long lists ("Pan-Pan-Pan-…"); the seed keeps it
 # reproducible.

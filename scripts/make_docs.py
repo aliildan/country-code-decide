@@ -34,7 +34,14 @@ HYPOTHESIS_KEYS = {
 
 def _release(res: Path) -> dict:
     """The documented release (results/release.json); v1 (part `test`, H1–H6) by default."""
-    return {"version": None, "part": "test", "hypotheses": "v1", **_load(res / "release.json")}
+    return {
+        "version": None,
+        "part": "test",
+        "hypotheses": "v1",
+        "preregistered": None,
+        "model_version": None,
+        **_load(res / "release.json"),
+    }
 
 
 def _latency_record(res: Path) -> dict:
@@ -64,8 +71,9 @@ def _table(res: Path, part: str) -> str:
 
 
 def _hypotheses(res: Path) -> str:
+    """The pre-registered verdicts as read (a post-hoc release keeps them, unchanged)."""
     rel = _release(res)
-    h = _load(res / rel["part"] / "hypotheses.json")
+    h = _load(res / (rel["preregistered"] or rel["part"]) / "hypotheses.json")
     if not h:
         return "_test not evaluated yet_"
     rows = ["| hypothesis | result | evidence |", "|---|---|---|"]
@@ -139,6 +147,20 @@ def _operating_point(res: Path) -> tuple[str, str]:
     """(alpha file suffix, sentence about the certificate) for the documented release: v1.2
     quotes 2 % only when P1 holds on the fresh registers; earlier releases certified 5 %."""
     rel = _release(res)
+    if rel["preregistered"]:  # post-hoc release (v1.2.1): the shipped unit-level certificate
+        reg = (
+            _load(res / f"calibration-{rel['version']}.json").get("domains", {}).get("register", {})
+        )
+        t = reg.get("thresholds", {})
+        ok = sorted((a for a, lam in t.items() if lam is not None), key=float)
+        no = sorted((a for a, lam in t.items() if lam is None), key=float)
+        if not ok:
+            return "0.05", " No target is certified."
+        units = reg.get("notes", {}).get("n_cert_units")
+        pct = " and ".join(f"{round(float(a) * 100)} %" for a in no)
+        return ok[0], (f" The {round(float(ok[0]) * 100)} % target is certified over {units} "
+                       "register units (one per register and normalised key)"
+                       + (f"; {pct} are not." if no else "."))  # fmt: skip
     if rel["hypotheses"] != "v12":
         return "0.05", (" The 1 % and 2 % targets could not be certified on this calibration "
                         "set.")  # fmt: skip
@@ -170,7 +192,8 @@ def _predictors(t: Path) -> dict[str, dict]:
 
 
 BASELINE_LABELS = {
-    "e5_knn": "multilingual-e5 nearest name",
+    "e5_knn": "multilingual-e5-small nearest name",
+    "lexicon_context": "exact lexicon + context rules",
     "lexicon_fuzzy": "lexicon + RapidFuzz",
     "lexicon_exact": "exact lexicon match",
     "ons_style": "ONS-style index + Levenshtein",
@@ -178,6 +201,17 @@ BASELINE_LABELS = {
     "pycountry": "pycountry",
     "coco": "country_converter",
 }
+
+
+def _llm_ms(res: Path, name: str, rep: dict) -> float | None:
+    """The LLM's latency from a run that called it: a run that read its answers from the cache
+    (< 1 ms per string) falls back to the pre-registered read."""
+    ms = rep.get("latency_ms_per_item")
+    if ms is not None and ms >= 1.0:
+        return ms
+    pre = _release(res)["preregistered"]
+    ms = _load(res / pre / f"{name}.json").get("latency_ms_per_item") if pre else None
+    return ms if ms is not None and ms >= 1.0 else None
 
 
 def _pct(x: float) -> str:
@@ -229,8 +263,11 @@ def _headline(res: Path) -> str:
                 "risk, without a certificate")  # fmt: skip
         lines.append(
             f"- The zero-shot LLM ({name.removeprefix('llm_')}) {acc}{conf}. "
-            f"It is ~{r['latency_ms_per_item'] / max(p50, 1e-9):.0f}× slower (the LLM on a GPU, "
-            "this model on a CPU)."
+            + (
+                f"It is ~{ms / max(p50, 1e-9):.0f}× slower (the LLM on a GPU, this model on a CPU)."
+                if (ms := _llm_ms(res, name, r))
+                else ""
+            )
         )
     return "\n".join(lines) + "\n"
 
@@ -239,10 +276,18 @@ def _gold_quality(res: Path) -> str:
     g = _load(res / "real" / "gold_quality.json")
     if not g or not g.get("n"):
         return "_no blind re-labelling yet_"
-    return (f"The register calibration strings were labelled a second time, blind (no proposal and "
-            f"no first label shown): agreement {100 * g['agreement']:.1f} % on {g['n']:,} strings "
-            f"({g['disagree']} disagreements); one-sided 95 % upper bound on disagreement "
-            f"{100 * g['gold_error_upper_95']:.1f} %.")  # fmt: skip
+    out = (f"The register calibration strings were labelled a second time, blind (no proposal and "
+           f"no first label shown): agreement {100 * g['agreement']:.1f} % on {g['n']:,} strings "
+           f"({g['disagree']} disagreements); one-sided 95 % upper bound on disagreement "
+           f"{100 * g['gold_error_upper_95']:.1f} %.")  # fmt: skip
+    hand = g.get("by_mode", {}).get("reviewed_proposal")
+    if hand and hand.get("n"):
+        other = g["n"] - hand["n"]
+        out += (f" On the {hand['n']} hand-labelled strings the passes disagree on "
+                f"{hand['disagree']} ({100 * hand['disagree'] / hand['n']:.1f} %); the {other} "
+                "automatic or preset labels agree by construction. Test labels were labelled "
+                "once.")  # fmt: skip
+    return out
 
 
 def _certified(res: Path) -> str:
@@ -273,7 +318,7 @@ def _at_a_glance(res: Path) -> str:
     acc = _pct(o["accuracy"]) + (f" (95 % CI {100 * ci[0]:.1f}–{100 * ci[1]:.1f})" if ci else "")
     name = "CountryCode-Decide " + (rel["version"] or "").replace("-v", " v")
     rows = [
-        f"| Fresh registers, {o['n']:,} distinct strings, read once | {name.strip()} |",
+        f"| Fresh registers, {o['n']:,} distinct strings | {name.strip()} |",
         "|---|---|",
         f"| Accuracy, every string answered | {acc} |",
         f"| Right country (a US state counts as US) | {_pct(o['country_accuracy'])} |",
@@ -289,9 +334,9 @@ def _at_a_glance(res: Path) -> str:
                     f"{_pct(others[best]['overall']['accuracy'])} |")  # fmt: skip
     p50 = _latency_record(res).get("p50_ms")
     for k in (k for k in others if k.startswith("llm_")):
-        slow = (f", ~{others[k]['latency_ms_per_item'] / p50:.0f}× slower (LLM on a GPU, "
-                "this model on a CPU)"
-                if p50 and others[k].get("latency_ms_per_item") else "")  # fmt: skip
+        ms = _llm_ms(res, k, others[k])
+        slow = (f", ~{ms / p50:.0f}× slower (LLM on a GPU, this model on a CPU)"
+                if p50 and ms else "")  # fmt: skip
         rows.append(f"| Zero-shot LLM ({k.removeprefix('llm_')}) | "
                     f"{_pct(others[k]['overall']['accuracy'])}{slow} |")  # fmt: skip
     lat = _latency_record(res)
@@ -382,22 +427,6 @@ def _citation(res: Path) -> str:
     return "\n".join(out)
 
 
-def _web_parity(res: Path) -> str:
-    rel = _release(res)
-    w = _load(res / f"web-parity-{rel['version']}.json") if rel["version"] else {}
-    if not w:
-        return "_browser parity not measured_"
-    alpha, _ = _operating_point(res)
-    a, top = w["decision_agreement"][alpha], w["top1_agreement"]
-    target = round(float(alpha) * 100)
-    return (f"onnxruntime-web computes the 8-bit matrix products in fp32 where the CPU server "
-            f"uses int8, so probabilities differ slightly: on {w['n']:,} held-out strings the "
-            f"browser makes the same decision as the server for {100 * a:.1f} % at the "
-            f"{target} % target (same top code {100 * top:.1f} %; top probability off by "
-            f"{w['mean_abs_dp_top']:.3f} on average, at most {w['max_abs_dp']:.2f}). "
-            "The certificate applies to the server and Python path")  # fmt: skip
-
-
 def citation_cff(res: Path) -> str:
     """CITATION.cff from configs/docs/links.yaml (Zenodo's GitHub integration reads it)."""
     import yaml
@@ -432,6 +461,128 @@ def citation_cff(res: Path) -> str:
 GENERATED = {"CITATION.cff": citation_cff}
 
 
+def _certificate_note(res: Path) -> str:
+    """Why the shipped certificate differs from the pre-registered one (v1.2.1)."""
+    rel = _release(res)
+    if not rel["preregistered"] or not rel["model_version"]:
+        return ""
+    old = _load(res / f"calibration-{rel['model_version']}.json").get("domains", {})
+    new = _load(res / f"calibration-{rel['version']}.json").get("domains", {})
+    o, n = old.get("register", {}), new.get("register", {})
+    if not o or not n:
+        return "_calibration records missing_"
+    ot, nt = o["thresholds"], n["thresholds"]
+    certified_before = sorted((a for a, lam in ot.items() if lam is not None), key=float)
+    lost = [a for a in certified_before if nt.get(a) is None]
+    kept = sorted((a for a, lam in nt.items() if lam is not None), key=float)
+    pct = lambda xs: " and ".join(f"{round(float(a) * 100)} %" for a in xs)  # noqa: E731
+    return (
+        f"The pre-registered certificate treated the {o['n_calib']} register calibration strings "
+        f"as independent draws and certified {pct(certified_before)}. The same string often "
+        f"appears in several fields of a register, so they are not independent: they form "
+        f"{n.get('notes', {}).get('n_cert_units')} register-and-key units. Counted per unit — a "
+        f"correction made after the test read, prompted by an external review — "
+        f"{pct(lost)} {'is' if len(lost) == 1 else 'are'} not certified, and "
+        + "; ".join(f"{round(float(a) * 100)} % is, at λ = {nt[a]:.3f}" for a in kept)
+        + f". This release ({rel['version']}) ships that calibration; the weights are unchanged."
+    )
+
+
+LABEL_ROWS = {
+    "model": "CountryCode-Decide (always answers)",
+    "model@0.05": "CountryCode-Decide at the certified 5 % target",
+    "lexicon_context": "Lexicon + context rules",
+}
+
+
+def _label_types(res: Path) -> str:
+    """Accuracy by how the gold label was made: automatic (exact lexicon match) or by hand."""
+    t = res / _release(res)["part"]
+    reps = {p.stem: _load(p) for p in sorted(t.glob("*.json"))}
+    llms = [x for x in reps if x.startswith("llm_")]
+    order = ["model", "model@0.05", *llms, "lexicon_context", "e5_knn", "lexicon_exact"]
+    rows = [k for k in order if "label=reviewed_proposal" in reps.get(k, {}).get("slices", {})]
+    if not rows:
+        return "_no label-type slices_"
+    sl0 = reps[rows[0]]["slices"]
+    na, nh = sl0["label=auto_exact"]["n"], sl0["label=reviewed_proposal"]["n"]
+    out = [f"| Predictor | automatic labels (exact lexicon match, n = {na}) | hand-labelled "
+           f"(n = {nh}) | hand-labelled answered |", "|---|---|---|---|"]  # fmt: skip
+    for k in rows:
+        a, h = reps[k]["slices"]["label=auto_exact"], reps[k]["slices"]["label=reviewed_proposal"]
+        if k.startswith("llm_"):
+            name = f"Zero-shot LLM ({k.removeprefix('llm_')})"
+        else:
+            name = LABEL_ROWS.get(k) or BASELINE_LABELS.get(k, k)
+        out.append(f"| {name} | {_pct(a['accuracy'])} | {_pct(h['accuracy'])} | "
+                   f"{round(h.get('answered', 1.0) * h['n'])} |")  # fmt: skip
+    return "\n".join(out)
+
+
+def _where_it_helps(res: Path) -> str:
+    """The model against the other predictors on the messier sets of the same release run."""
+    base = (res / _release(res)["part"]).parent
+    v11, ood = base / "test_v11", base / "ood"
+    m11 = _load(v11 / "model.json")
+    if not m11:
+        return ""
+    others = {k: v for k, v in _predictors(v11).items()
+              if "overall" in v and not k.startswith(("model", "v1_"))}  # fmt: skip
+    best = max(others, key=lambda k: others[k]["overall"]["accuracy"])
+    lc = others.get("lexicon_context", {}).get("overall", {}).get("accuracy")
+    nov_m = m11.get("slices", {}).get("lexicon=novel", {})
+    nov_b = others[best].get("slices", {}).get("lexicon=novel", {})
+    label = (best.removeprefix("llm_") + " zero-shot") if best.startswith("llm_") else \
+        BASELINE_LABELS.get(best, best)  # fmt: skip
+    out = (f"On held-out strings of the training registers ({m11['overall']['n']:,} strings, many "
+           f"misspelled or abbreviated; other strings of the same registers were in training) the "
+           f"model is right on {_pct(m11['overall']['accuracy'])}, the best other predictor "
+           f"({label}) on {_pct(others[best]['overall']['accuracy'])}"
+           + (f", the lexicon with context rules on {_pct(lc)}" if lc is not None else "")
+           + (f"; on the {nov_m['n']:,} of them with no exact lexicon match "
+              f"{_pct(nov_m['accuracy'])} against {_pct(nov_b['accuracy'])}" if nov_m and nov_b
+              else "") + ".")  # fmt: skip
+    mo = _load(ood / "model.json")
+    llm = next((v for k, v in _predictors(ood).items() if k.startswith("llm_")), None)
+    if mo and llm:
+        out += (f" On GBIF's curated list the LLM is better: {_pct(llm['overall']['accuracy'])} "
+                f"against {_pct(mo['overall']['accuracy'])}.")  # fmt: skip
+    return out
+
+
+def _sibling(res: Path, name: str) -> str:
+    """A part of the documented release run (posthoc-v1.2.1/<name> for v1.2.1, else <name>)."""
+    own = (res / _release(res)["part"]).parent / name
+    return str(own.relative_to(res)) if (own / "model.json").exists() else name
+
+
+def _hard_risk(res: Path) -> str:
+    """Where the errors of the certified operating point are: hand-labelled vs automatic strings."""
+    alpha, _ = _operating_point(res)
+    op = _load(res / _release(res)["part"] / f"model@{alpha}.json").get("slices", {})
+    h, a = op.get("label=reviewed_proposal", {}), op.get("label=auto_exact", {})
+    if not h.get("n") or not a.get("n"):
+        return ""
+    return (f"The guarantee is an average over strings like the calibration strings, and the "
+            f"errors concentrate on hard ones: at the {round(float(alpha) * 100)} % target "
+            f"{_pct(h['risk_answered'] or 0.0)} of the {round(h['answered'] * h['n'])} answered "
+            f"hand-labelled strings are wrong, {_pct(a['risk_answered'] or 0.0)} of the "
+            f"{round(a['answered'] * a['n'])} answered strings that an exact lexicon match "
+            "labelled.")  # fmt: skip
+
+
+def _script_scope(res: Path) -> str:
+    base = (res / _release(res)["part"]).parent
+    total = other = 0
+    for part in sorted(p for p in base.iterdir() if (p / "model.json").exists()):
+        for k, v in _load(part / "model.json").get("slices", {}).items():
+            if k.startswith("script="):
+                total += v["n"]
+                other += v["n"] if k not in ("script=LATIN", "script=NONE") else 0
+    return (f"Of the {total:,} evaluation strings, {other:,} are not in Latin script, so accuracy "
+            "on other scripts is not measured.")  # fmt: skip
+
+
 def _hero(res: Path) -> str:
     lat = _latency_record(res)
     if not lat:
@@ -444,8 +595,9 @@ BLOCKS = {
     "LATENCY": _latency,
     "TABLE_TEST": lambda r: _table(r, _release(r)["part"]),
     "TABLE_DEV": lambda r: _table(r, "dev"),
-    "TABLE_V11": lambda r: _table(r, "test_v11"),
-    "TABLE_OOD": lambda r: _table(r, "ood"),
+    "TABLE_V11": lambda r: _table(r, _sibling(r, "test_v11")),
+    "TABLE_OOD": lambda r: _table(r, _sibling(r, "ood")),
+    "HARD_RISK": _hard_risk,
     "HYPOTHESES": _hypotheses,
     "SYNTHETIC": _synthetic,
     "LEXICON": _lexicon,
@@ -457,7 +609,10 @@ BLOCKS = {
     "PAPER_LINK": _paper_link,
     "CITATION": _citation,
     "HERO": _hero,
-    "WEB_PARITY": _web_parity,
+    "CERTIFICATE_NOTE": _certificate_note,
+    "LABEL_TYPES": _label_types,
+    "WHERE_IT_HELPS": _where_it_helps,
+    "SCRIPT_SCOPE": _script_scope,
     "REPO": lambda r: _links(r).get("repo", "_no repository link_"),
 }
 

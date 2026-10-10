@@ -1,6 +1,8 @@
 {
- "version": "small-v1.2",
- "part": "test_v12",
+ "version": "small-v1.2.1",
+ "part": "posthoc-v1.2.1/test_v12",
+ "preregistered": "test_v12",
  "hypotheses": "v12",
- "train_run": "small-v12f"
+ "train_run": "small-v12f",
+ "model_version": "small-v1.2"
 }
