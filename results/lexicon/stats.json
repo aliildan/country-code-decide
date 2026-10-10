@@ -1,0 +1,23 @@
+{
+  "ambiguous_keys": 1947,
+  "by_kind": {
+    "code": 620,
+    "demonym": 8404,
+    "historical": 20367,
+    "name": 317974,
+    "non_country": 25318
+  },
+  "by_source": {
+    "cldr": 233561,
+    "codes": 366,
+    "overrides": 37,
+    "wikidata": 138719
+  },
+  "cldr": "47",
+  "force_sets": 9,
+  "keys": 86406,
+  "keys_resolved_by_rules": 323,
+  "languages": 1274,
+  "rows": 372683,
+  "targets_covered": 302
+}

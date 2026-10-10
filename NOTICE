@@ -1,0 +1,28 @@
+CountryCode-Decide
+Copyright 2026 Ali Ildan
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Base model:
+- jhu-clsp/mmBERT-small: MIT License, https://huggingface.co/jhu-clsp/mmBERT-small
+
+Reference data used to build the lexicon and the training strings (not redistributed as datasets):
+- Unicode CLDR (via Babel): Unicode License v3, https://www.unicode.org/license.txt
+- Wikidata: CC0 1.0, https://www.wikidata.org/wiki/Wikidata:Licensing
+- GeoNames (admin1 and cities15000 names, used to generate training strings): CC BY 4.0,
+  https://www.geonames.org
+
+Register strings (read with aggregate queries: distinct value and count, never records):
+- Colorado (data.colorado.gov) and Connecticut (data.ct.gov) business registry open data:
+  Public Domain; training and evaluation
+- UK Companies House: contains public sector information licensed under the Open Government
+  Licence v3.0; training and evaluation
+- Brønnøysund Register Centre: contains data under the Norwegian licence for Open Government data
+  (NLOD) made available by the Brønnøysund Register Centre; training and evaluation
+- Oregon (data.oregon.gov) business registry open data: Public Domain (ORS 276A.368); evaluation only
+- New York (data.ny.gov) corporation filings: OPEN-NY terms; evaluation only
+- GBIF parsers, countryName.tsv: Apache License 2.0, https://github.com/gbif/parsers; evaluation only
+
+Generators that the code base contains but the released model does not use (they failed the
+usefulness gate): OCR readings with microsoft/trocr-base-handwritten (MIT) on google/fonts
+handwriting fonts (SIL OFL 1.1), and LLM paraphrases from Qwen3.5-35B-A3B (Apache-2.0).

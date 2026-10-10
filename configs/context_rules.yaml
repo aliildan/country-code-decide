@@ -1,0 +1,34 @@
+# Field context for training strings (design-01 §3). Real strings carry their own context;
+# lexicon and synthetic strings get one sampled from here. Reviewed config.
+contexts:            # [field, register, weight]; register "XX" = a random non-US register country
+  - ["country", "unknown", 0.25]
+  - ["country", "XX", 0.20]
+  - ["country", "US", 0.10]
+  - ["jurisdiction", "US", 0.10]
+  - ["nationality", "unknown", 0.05]
+  - ["unknown", "unknown", 0.30]
+register_countries: ["NO", "DK", "AT", "DE", "EE", "GB", "FR", "NL", "SE", "FI", "CH", "TR", "CA"]
+# A string whose target set mixes a country and a US state ("CA" → {CA, US-CA}, "Georgia" →
+# {GE, US-GA}) becomes one example per context below: the state in a US jurisdiction field, the
+# country in a country field (any register: a US register's country field "CA" is Canada) or a
+# nationality field, the soft set when the context does not decide.
+# Optional third element = repeat count, so state and country readings carry equal weight.
+us_collision:
+  state: [["jurisdiction", "US", 3]]
+  country: [["country", "XX"], ["country", "US"], ["nationality", "unknown"]]
+  soft: [["unknown", "unknown"]]
+# A "US" register context is a random state register ("US-CO") this often, so state registers
+# (Colorado, Connecticut, …) behave like "US" except for their own places.
+us_state_register_share: 0.5
+# Place-name generators (owner city policy 2026-10-10): a name shared by several jurisdictions is
+# the set, but in a register of one of them it is that one ("Liverpool" in a GB register → GB,
+# "Adams County" in a US-CO register → US-CO). Other sets ("France/Germany") ignore the register.
+place_sources: ["synthetic:city@2", "synthetic:county@1", "synthetic:region@1"]
+# Canadian province/territory codes (ISO 3166-2:CA) name Canada in a US jurisdiction field ("ON",
+# "NL"), whatever they mean elsewhere (NL, PE, SK, NU, YT are also country codes). Owner labelling
+# policy 2026-10-10 (plan-09 Task 3); applied to every training example in that context.
+us_jurisdiction_codes:
+  CA: ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
+# Context-bound generated strings get only these contexts: [field, register, repeat].
+source_contexts:
+  "synthetic:caprov": [["jurisdiction", "US", 2]]

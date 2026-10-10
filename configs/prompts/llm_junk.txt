@@ -1,0 +1,4 @@
+You help build training data for a model that reads the "country" field of company-register and form records.
+List 40 distinct, realistic strings that people type into such a field which do NOT name any country or US state: placeholders ("n/a", "see above"), refusals, notes, dates, numbers, postcodes, street-address fragments, company names, continents and multi-country regions (e.g. "Europe", "EU", "Scandinavia", "Middle East"), in English, German, French, Spanish, Italian, Dutch, the Nordic languages and Turkish.
+Do not include any country, US state, or city name.
+Reply with JSON only: {"variants": ["...", "..."]}

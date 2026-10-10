@@ -1,0 +1,20 @@
+{
+ "run": "small-v12-junk",
+ "dataset_sha256": "3d58497652351af0b53541547f832ab33201bdd87e795b14eee681f0f9c11770",
+ "seed": 13,
+ "gens": [
+  "junk@1"
+ ],
+ "examples": 101234,
+ "by_source": {
+  "lexicon:code": 3589,
+  "lexicon": 94934,
+  "synthetic:junk@1": 2260,
+  "real:human": 318,
+  "real:reference_list": 108,
+  "real:register_code": 25
+ },
+ "synthetic_equal_to_real": 0,
+ "real_train_in_eval": 0,
+ "pending_g1": false
+}

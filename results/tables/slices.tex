@@ -1,0 +1,16 @@
+\begin{tabular}{l r rrrrr}
+\toprule
+Slice & $n$ & Model & LLM & E5 NN & Fuzzy & countrynames \\
+\midrule
+name in the lexicon (exact key) & 328 & 95.4 & 92.7 & 89.9 & 86.0 & 65.5 \\
+no exact lexicon match & 33 & 21.2 & 9.1 & 9.1 & 15.2 & 42.4 \\
+country fields & 165 & 95.8 & 97.0 & 96.4 & 93.9 & 98.8 \\
+jurisdiction fields & 196 & 82.7 & 75.0 & 70.9 & 67.3 & 33.7 \\
+gold: a country & 242 & 89.7 & 83.9 & 89.7 & 86.4 & 93.0 \\
+gold: a US state & 111 & 91.9 & 90.1 & 72.1 & 66.7 & 0.0 \\
+gold: not a place & 4 & 25.0 & 100.0 & 25.0 & 50.0 & 100.0 \\
+gold: ambiguous set & 4 & 0.0 & 0.0 & 0.0 & 50.0 & 0.0 \\
+New York & 246 & 91.9 & 89.4 & 91.5 & 90.2 & 75.6 \\
+Oregon & 115 & 81.7 & 75.7 & 63.5 & 56.5 & 37.4 \\
+\bottomrule
+\end{tabular}

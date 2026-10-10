@@ -1,0 +1,30 @@
+{
+ "run": "small-v12-core-noocr",
+ "dataset_sha256": "7ffa940eb258bdb6882bbd67eb64686c76e01d92021b31af3dd7180c59e6f8ff",
+ "seed": 13,
+ "gens": [
+  "junk@1",
+  "keyboard@2",
+  "format@4",
+  "translit@2",
+  "llm@2",
+  "geo@2"
+ ],
+ "examples": 171747,
+ "by_source": {
+  "lexicon:code": 3589,
+  "lexicon": 94934,
+  "synthetic:junk@1": 2260,
+  "synthetic:keyboard@2": 10462,
+  "synthetic:format@4": 14122,
+  "synthetic:translit@2": 34534,
+  "synthetic:llm@2": 4327,
+  "synthetic:geo@2": 7068,
+  "real:human": 318,
+  "real:reference_list": 108,
+  "real:register_code": 25
+ },
+ "synthetic_equal_to_real": 0,
+ "real_train_in_eval": 0,
+ "pending_g1": true
+}

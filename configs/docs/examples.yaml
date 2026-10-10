@@ -1,0 +1,18 @@
+# README examples (scripts/run_examples.py → results/examples-<version>.json). Chosen by hand to
+# show the behaviour — typos, languages, scripts, context, abstention — not to measure accuracy.
+# Values are read as strings (BaseLoader), so the register "NO" stays Norway.
+- {text: "Østerrike", field: "country", register_country: "NO"}
+- {text: "Untted Klngdom", field: "country"}
+- {text: "England and Whales", field: "country", register_country: "GB"}
+- {text: "BRITHISH VIRGIN ISLANDS", field: "country"}
+- {text: "10250 THAILAND", field: "country"}
+- {text: "Nederländerna", field: "country", register_country: "SE"}
+- {text: "中华人民共和国", field: "country"}
+- {text: "W. Germany", field: "country"}
+- {text: "Calif", field: "jurisdiction", register_country: "US"}
+- {text: "Georgia", field: "jurisdiction", register_country: "US"}
+- {text: "Georgia"}
+- {text: "Europe", field: "country"}
+- {text: "n/a", field: "country"}
+- {text: "Deutchland", field: "country"}
+- {text: "Czechoslovakia", field: "country"}

@@ -1,0 +1,15 @@
+# v1.2 candidate (plan-08): real register strings + the G1-repaired releases kept by G3 (no ocr@2); pending the owner's second audit.
+name: small-v12
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/v12-final.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: true
+selection: v11
+selection_metric: domain_macro

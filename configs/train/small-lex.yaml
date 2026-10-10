@@ -1,0 +1,13 @@
+# Lexicon only (no synthetic data) — the G3 reference run (plan-04 Task 4).
+name: small-lex
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/lex.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: false

@@ -1,0 +1,30 @@
+{
+  "items": 14011,
+  "rows_covered": 47671185,
+  "gbif_dropped_codes": {
+    "DC": 1
+  },
+  "by_source_field": {
+    "gb-ch/CountryOfOrigin": 228,
+    "gb-ch/RegAddress.Country": 207,
+    "gbif/countryName": 9782,
+    "no-brreg/forretningsadresse.land": 147,
+    "no-brreg/postadresse.land": 112,
+    "no-brreg/utenlandskRegisterAdresse.land": 86,
+    "us-co/jurisdictonofformation": 1373,
+    "us-co/mailingcountry": 154,
+    "us-co/principalcountry": 168,
+    "us-ct/billingcountry": 228,
+    "us-ct/billingstate": 124,
+    "us-ct/country_formation": 198,
+    "us-ct/formation_place": 376,
+    "us-ct/mailing_jurisdiction_country": 32,
+    "us-ct/office_in_jurisdiction_country": 42,
+    "us-ct/records_address_country": 21,
+    "us-ct/state_or_territory_formation": 365,
+    "us-ny/country": 156,
+    "us-ny/filer_country": 14,
+    "us-ny/jurisdiction": 81,
+    "us-or/jurisdiction": 117
+  }
+}

@@ -1,0 +1,15 @@
+# G1 ablation (plan-08): real register strings + lexicon + junk@1 only (the one generator release that passed the G1 audit).
+name: small-v12-junk
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/v12-junk.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: false
+selection: v11
+selection_metric: domain_macro

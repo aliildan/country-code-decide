@@ -1,0 +1,102 @@
+# Reviewed lexicon overrides (design-01 §2, plan-01 Tasks 7–8). Every entry is reference data
+# curated by hand; targets must be in the label space (configs/labels).
+
+# Wikidata items whose labels/aliases name a target although they are not that target's item.
+extra_items:
+  Q21: "GB"    # England
+  Q22: "GB"    # Scotland
+  Q25: "GB"    # Wales
+  Q26: "GB"    # Northern Ireland
+
+# ISO 3166-3 (formerly used) codes → successor targets. One successor = rename (unique answer);
+# several = split state (ambiguous set → candidate set / abstain).
+historical:
+  AIDJ: ["DJ"]                                  # French Afars and Issas
+  ANHH: ["BQ", "CW", "SX"]                      # Netherlands Antilles
+  BQAQ: ["AQ"]                                  # British Antarctic Territory
+  BUMM: ["MM"]                                  # Burma
+  BYAA: ["BY"]                                  # Byelorussian SSR
+  CSHH: ["CZ", "SK"]                            # Czechoslovakia
+  CSXX: ["RS", "ME"]                            # Serbia and Montenegro
+  CTKI: ["KI"]                                  # Canton and Enderbury Islands
+  DDDE: ["DE"]                                  # German Democratic Republic
+  DHBJ: ["BJ"]                                  # Dahomey
+  FQHH: ["AQ", "TF"]                            # French Southern and Antarctic Territories
+  FXFR: ["FR"]                                  # Metropolitan France
+  GEHH: ["KI", "TV"]                            # Gilbert and Ellice Islands
+  HVBF: ["BF"]                                  # Upper Volta
+  JTUM: ["UM"]                                  # Johnston Island
+  MIUM: ["UM"]                                  # Midway Islands
+  NHVU: ["VU"]                                  # New Hebrides
+  NQAQ: ["AQ"]                                  # Dronning Maud Land
+  NTHH: ["IQ", "SA"]                            # Neutral Zone
+  PCHH: ["FM", "MH", "MP", "PW"]                # Trust Territory of the Pacific Islands
+  PUUM: ["UM"]                                  # US Miscellaneous Pacific Islands
+  PZPA: ["PA"]                                  # Panama Canal Zone
+  RHZW: ["ZW"]                                  # Southern Rhodesia
+  SKIN: ["IN"]                                  # Sikkim
+  SUHH: ["AM", "AZ", "BY", "EE", "GE", "KG", "KZ", "LT", "LV", "MD", "RU", "TJ", "TM", "UA", "UZ"]  # USSR
+  TPTL: ["TL"]                                  # East Timor
+  VDVN: ["VN"]                                  # North Vietnam
+  WKUM: ["UM"]                                  # Wake Island
+  YDYE: ["YE"]                                  # South Yemen
+  YUCS: ["BA", "HR", "ME", "MK", "RS", "SI", "XK"]  # Yugoslavia
+  ZRCD: ["CD"]                                  # Zaire
+
+# Kosovo (owner request 2026-10-10: "XK kosova alternatiflerini de ekle"). Codes checked against
+# Wikidata Q1246 (alpha-3 XKS, FIPS KV, IOC KOS; aliases RKS, XKX) and common practice
+# (World Bank / EU XKX, IMF UVK, ISO 3166-2 RS-KM, Albanian KS). "UNK" (UNMIK travel documents) was
+# removed 2026-10-10 (plan-09): in registers it means "unknown" (real gold: UNK → NONE).
+xk_alternatives:
+  codes: ["XKX", "XKS", "RKS", "KOS", "KV", "UVK", "RS-KM", "KS"]
+  names:
+    - "Kosovo"
+    - "Kosova"
+    - "Kosovë"
+    - "Republika e Kosovës"
+    - "Republic of Kosovo"
+    - "Kosovo i Metohija"
+    - "Kosovo and Metohija"
+    - "Kosovo-Metohija"
+    - "Kosmet"
+    - "Kosovo under UNSCR 1244"
+    - "Kosovo UNSCR 1244/99"
+    - "Kosovo (UNMIK)"
+    - "Косово"
+    - "Косово и Метохија"
+    - "Republika Kosovo"
+    - "Kosova Cumhuriyeti"
+
+# Genuinely ambiguous names kept as candidate sets whatever the sources' support says
+# (design-01 §2: abstain or return the set). Keys are compared by compact_key.
+force_sets:
+  "Congo": ["CD", "CG"]
+  "Kongo": ["CD", "CG"]
+  "Korea": ["KP", "KR"]
+  "Virgin Islands": ["VG", "VI"]
+  "Saint Martin": ["MF", "SX"]
+  "St Martin": ["MF", "SX"]
+  "Micronesia": ["FM", "NONE"]
+  # Island groups split between jurisdictions: a company sits in one of them (owner practice
+  # 2026-10-10, review guide; plan-09 Task 6).
+  "Channel Islands": ["GG", "JE"]
+  "Caroline Islands": ["FM", "PW"]
+
+# Extra aliases: [alias, target, kind, lang]. Common historical or colloquial names.
+add:
+  - ["Persia", "IR", "historical", "en"]
+  - ["Siam", "TH", "historical", "en"]
+  - ["Ceylon", "LK", "historical", "en"]
+  - ["Swaziland", "SZ", "historical", "en"]
+  - ["Rhodesia", "ZW", "historical", "en"]
+  - ["East Pakistan", "BD", "historical", "en"]
+  - ["Kampuchea", "KH", "historical", "en"]
+  - ["Formosa", "TW", "historical", "en"]
+  - ["Abyssinia", "ET", "historical", "en"]
+  - ["Zaire", "CD", "historical", "en"]
+  - ["Burma", "MM", "historical", "en"]
+  - ["West Germany", "DE", "historical", "en"]
+  - ["East Germany", "DE", "historical", "en"]
+
+# Aliases to drop: [alias, target] (plainly wrong source aliases, found in the ambiguity review).
+remove: []

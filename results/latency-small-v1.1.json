@@ -1,0 +1,9 @@
+{
+ "bundle": "dist/countrycode-small-v1.1",
+ "threads": 4,
+ "n": 1000,
+ "p50_ms": 4.050746003485983,
+ "p95_ms": 5.0301559538638685,
+ "batch_ms_per_item": 5.948904985998524,
+ "int8_bytes": 146721998
+}

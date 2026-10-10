@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CountryCode-Decide</title>
+<meta name="description" content="Messy country names to ISO 3166 codes — in your browser, with calibrated abstention.">
+<style>
+:root{--bg:#f7f6f2;--fg:#1c1c1a;--muted:#6a6a64;--card:#ffffff;--line:#e2e0d8;--accent:#1f5fbf;
+--ok:#1d7a3e;--warn:#9a6700;--chip:#efeee8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141413;--fg:#ecebe6;
+--muted:#a2a19a;--card:#1e1e1c;--line:#34332f;--accent:#7ea6ff;--ok:#6fcf8f;--warn:#e3b341;--chip:#2a2a27}}
+:root[data-theme="dark"]{--bg:#141413;--fg:#ecebe6;--muted:#a2a19a;--card:#1e1e1c;--line:#34332f;
+--accent:#7ea6ff;--ok:#6fcf8f;--warn:#e3b341;--chip:#2a2a27}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:26px;margin:0 0 4px} .lede{color:var(--muted);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);
+border-radius:8px;padding:10px 12px;width:100%}
+input#text{font:20px ui-monospace,monospace}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+.result .code{font:600 34px ui-monospace,monospace} .result .name{font-size:18px}
+.badge{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--chip)}
+.badge.ok{color:var(--ok)} .badge.warn{color:var(--warn)}
+.meter{height:8px;border-radius:4px;background:var(--chip);overflow:hidden;margin:10px 0}
+.meter>div{height:100%;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px} .chip{cursor:pointer;border:1px solid var(--line);
+background:var(--chip);color:var(--fg);border-radius:999px;padding:4px 12px;font:14px ui-monospace,monospace}
+.muted{color:var(--muted);font-size:14px} footer{color:var(--muted);font-size:13px;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<h1>CountryCode-Decide</h1>
+<p class="lede">Type a country the way a register, a form or an OCR scan writes it. The model answers with an
+ISO 3166 code — or says it is not sure. It runs entirely in your browser.</p>
+
+<div class="card">
+<label for="text">Text</label>
+<input id="text" value="Untted Klngdom" autocomplete="off" spellcheck="false">
+<div class="row">
+<div><label for="field">Field</label><select id="field">
+<option value="unknown">unknown</option><option value="country" selected>country</option>
+<option value="jurisdiction">jurisdiction</option><option value="nationality">nationality</option></select></div>
+<div><label for="register">Register country</label><select id="register">
+<option value="unknown" selected>unknown</option><option value="US">US</option><option value="NO">NO</option>
+<option value="DK">DK</option><option value="AT">AT</option><option value="DE">DE</option><option value="GB">GB</option></select></div>
+<div><label for="alpha">Max. error rate</label><select id="alpha">
+<option value="0.01">1 %</option><option value="0.02" selected>2 %</option><option value="0.05">5 %</option>
+<option value="none">answer always</option></select></div>
+</div>
+</div>
+
+<div class="card result" id="result" aria-live="polite"><span class="muted">Loading the model…</span></div>
+
+<div class="card">
+<div class="muted" style="margin-bottom:8px">Real strings from public registers and curated lists</div>
+<div class="chips" id="examples"></div>
+</div>
+
+<footer>Model: <span id="ver">–</span>. Apache-2.0. Thresholds are certified on real held-out register strings
+(Learn-then-Test) for the CPU server; the browser computes in fp32, so a decision near the threshold can
+differ from the server's. Names: Unicode CLDR, Wikidata, GeoNames (CC BY 4.0).</footer>
+</main>
+<script type="module" src="demo.js"></script>
+</body>
+</html>

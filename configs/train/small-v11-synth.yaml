@@ -1,0 +1,14 @@
+# v1.1 without real noise: synth-v2 + city@1 + pairs@2, selection on the v1.1 select role.
+name: small-v11-synth
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/v11-synth.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: true
+selection: v11

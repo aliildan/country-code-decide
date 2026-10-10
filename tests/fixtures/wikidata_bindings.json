@@ -1,0 +1,18 @@
+{
+  "_fixture": true,
+  "countries": [
+    {"code": {"type": "literal", "value": "AT"}, "label": {"type": "literal", "xml:lang": "de", "value": "Österreich"}, "kind": {"type": "literal", "value": "name"}},
+    {"code": {"type": "literal", "value": "AT"}, "label": {"type": "literal", "xml:lang": "en", "value": "Republic of Austria"}, "kind": {"type": "literal", "value": "name"}},
+    {"code": {"type": "literal", "value": "AT"}, "label": {"type": "literal", "value": "AUT"}, "kind": {"type": "literal", "value": "code"}},
+    {"code": {"type": "literal", "value": "AT"}, "label": {"type": "literal", "xml:lang": "de", "value": "österreichisch"}, "kind": {"type": "literal", "value": "demonym"}}
+  ],
+  "us_states": [
+    {"code": {"type": "literal", "value": "US-CA"}, "label": {"type": "literal", "xml:lang": "de", "value": "Kalifornien"}, "kind": {"type": "literal", "value": "name"}}
+  ],
+  "extra": [
+    {"item": {"type": "uri", "value": "http://www.wikidata.org/entity/Q21"}, "label": {"type": "literal", "xml:lang": "en", "value": "England"}, "kind": {"type": "literal", "value": "name"}}
+  ],
+  "historical": [
+    {"code": {"type": "literal", "value": "YUCS"}, "label": {"type": "literal", "xml:lang": "de", "value": "Jugoslawien"}, "kind": {"type": "literal", "value": "name"}}
+  ]
+}

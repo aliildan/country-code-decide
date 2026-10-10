@@ -1,0 +1,6 @@
+{
+ "version": "small-v1.2",
+ "part": "test_v12",
+ "hypotheses": "v12",
+ "train_run": "small-v12f"
+}

@@ -1,0 +1,13 @@
+# synth-v2 data with the corrected collision contexts (country field = country for any register).
+name: small-synth3
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/synth3.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: true

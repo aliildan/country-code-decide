@@ -1,0 +1,7 @@
+# keyboard@1 — fitted to the real dev typo profile (G2; results/synthetic/realism.json):
+# 441 typo-like real dev pairs, 2026-10-10: edits 1/2/3+ = 0.56/0.36/0.08;
+# operations insert/delete/replace/transpose = 0.64/0.175/0.166/0.018.
+edits: {"1": 0.56, "2": 0.36, "3": 0.08}
+ops: {insert: 0.64, delete: 0.175, replace: 0.167, transpose: 0.018}
+insert_double_share: 0.5   # half of the inserted letters double the current one ("Brazill")
+min_letters: 4             # shorter aliases (codes, "Mali" is fine at 4) get no typos

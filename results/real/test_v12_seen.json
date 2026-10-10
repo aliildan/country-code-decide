@@ -1,0 +1,14 @@
+{
+ "dataset": "v12f",
+ "role": "test_v12",
+ "by_source": {
+  "us-ny": {
+   "items": 246,
+   "seen": 228
+  },
+  "us-or": {
+   "items": 115,
+   "seen": 99
+  }
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "bundle_a": "dist/countrycode-small-v1.2-untrimmed",
+ "bundle_b": "dist/countrycode-small-v1.2",
+ "size_mb_a": 146.721998,
+ "size_mb": 74.731597,
+ "vocab_old": 256000,
+ "vocab_new": 68525,
+ "select_accuracy_untrimmed": 0.6546218487394958,
+ "select_accuracy": 0.6518207282913165,
+ "agreement_fp32_kept": 1.0,
+ "agreement_fp32": {
+  "all": 0.987932019423022,
+  "calib": 0.9880239520958084,
+  "ood": 0.9834170854271357,
+  "select": 0.9865546218487395,
+  "test_seen_v1": 1.0,
+  "test_v11": 0.9817073170731707,
+  "test_v12": 0.997229916897507,
+  "train": 1.0
+ },
+ "agreement_int8": {
+  "all": 0.9729363039131677,
+  "calib": 0.9709153122326775,
+  "ood": 0.9608040201005025,
+  "select": 0.9722689075630252,
+  "test_seen_v1": 1.0,
+  "test_v11": 0.9725609756097561,
+  "test_v12": 0.9916897506925207,
+  "train": 0.9991039426523297
+ },
+ "parity_int8_vs_fp32_a": 0.9847900599828621,
+ "parity_int8_vs_fp32_b": 0.9835047129391602,
+ "tokens_identical": 1.0,
+ "tokens_checked": 511980
+}

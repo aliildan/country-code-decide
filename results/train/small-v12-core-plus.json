@@ -1,0 +1,36 @@
+{
+ "run": "small-v12-core-plus",
+ "dataset_sha256": "2aab68f34b9374fcd5788f249f02a5c6162ed6d61e94eb0f809180bf9ff1e589",
+ "seed": 13,
+ "gens": [
+  "junk@1",
+  "keyboard@2",
+  "format@4",
+  "translit@2",
+  "ocr@2",
+  "llm@2",
+  "geo@2",
+  "affix@2",
+  "pairs@3"
+ ],
+ "examples": 177242,
+ "by_source": {
+  "lexicon:code": 3589,
+  "lexicon": 94934,
+  "synthetic:junk@1": 2260,
+  "synthetic:keyboard@2": 10462,
+  "synthetic:format@4": 14122,
+  "synthetic:translit@2": 34534,
+  "synthetic:ocr@2": 722,
+  "synthetic:llm@2": 4327,
+  "synthetic:geo@2": 7068,
+  "synthetic:affix@2": 785,
+  "synthetic:pairs@3": 3988,
+  "real:human": 318,
+  "real:reference_list": 108,
+  "real:register_code": 25
+ },
+ "synthetic_equal_to_real": 0,
+ "real_train_in_eval": 0,
+ "pending_g1": true
+}

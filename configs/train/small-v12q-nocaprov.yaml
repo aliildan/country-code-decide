@@ -1,0 +1,15 @@
+# G3 (plan-09): quality round without caprov@1.
+name: small-v12q-nocaprov
+base: jhu-clsp/mmBERT-small
+dataset: data/processed/train/v12q-nocaprov.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: true
+selection: v11
+selection_metric: domain_macro

@@ -1,0 +1,4 @@
+# Source → calibration domain (plan-06 T2). A string's domain comes from where it was read,
+# never from its text. Unknown sources get the strictest merge of all fitted policies.
+register: ["us-co", "us-ct", "no-brreg", "gb-ch", "us-ny", "us-or"]
+curated: ["gbif"]

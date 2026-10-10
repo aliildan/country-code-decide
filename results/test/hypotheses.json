@@ -1,0 +1,47 @@
+{
+ "H1": {
+  "model_accuracy": 0.6449369839200347,
+  "best_non_llm": "lexicon_fuzzy",
+  "best_non_llm_accuracy": 0.621251629726206,
+  "pass": false
+ },
+ "H2": {
+  "realised_risk": NaN,
+  "answered": 0.0,
+  "pass": false
+ },
+ "H3": {
+  "none_false_accept": 0.0,
+  "vacuous": true,
+  "pass": false
+ },
+ "H4": {
+  "dev_gain": 0.105,
+  "pass": true
+ },
+ "H5": {
+  "cpu_p50_ms": 4.040584999529528,
+  "pass": true
+ },
+ "H6": {
+  "llm": "llm_qwen3.5_35b-a3b-q4_K_M",
+  "llm_accuracy": 0.7222946544980443,
+  "latency_ratio": 26.648845098094988,
+  "pass": false
+ },
+ "bundle": "dist/countrycode-small-v1",
+ "run": "runs/small-synth4",
+ "pending_g1": true,
+ "calibration": {
+  "temps": [
+   2.4167814038151247,
+   0.11834916077268791
+  ],
+  "thresholds": {
+   "0.01": null,
+   "0.02": null,
+   "0.05": 0.85
+  },
+  "q": 0.9910661212583558
+ }
+}

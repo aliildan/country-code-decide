@@ -1,0 +1,27 @@
+{
+  "within_source_leaks": 0,
+  "cross_source_keys_in_several_parts": 543,
+  "items_by_source_part": {
+    "gb-ch/calib": 141,
+    "gb-ch/dev": 141,
+    "gb-ch/test": 153,
+    "gbif/calib": 2915,
+    "gbif/dev": 2887,
+    "gbif/test": 3980,
+    "no-brreg/calib": 106,
+    "no-brreg/dev": 131,
+    "no-brreg/test": 108,
+    "us-co/calib": 546,
+    "us-co/dev": 486,
+    "us-co/test": 663,
+    "us-ct/calib": 482,
+    "us-ct/dev": 358,
+    "us-ct/test": 546,
+    "us-ny/calib": 61,
+    "us-ny/dev": 81,
+    "us-ny/test": 109,
+    "us-or/calib": 39,
+    "us-or/dev": 40,
+    "us-or/test": 38
+  }
+}

@@ -1,0 +1,13 @@
+# Ablation (plan-04 T7): mmBERT-base on synth-v2 — accuracy ceiling for the small model.
+name: base-synth2
+base: jhu-clsp/mmBERT-base
+dataset: data/processed/train/synth2.jsonl
+epochs: 4
+batch: 256
+lr_encoder: 5.0e-5
+lr_head: 1.0e-3
+warmup: 0.05
+max_len: 48
+state_weight: 1.0
+seed: 13
+pending_g1: true

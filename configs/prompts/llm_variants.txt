@@ -1,0 +1,10 @@
+You help build training data for a model that reads how people write a place in company-register and form fields and maps it to a code.
+Target: {name} ({code}){extra}
+List up to 40 distinct, realistic strings that a clerk, a person filling in a form, or an OCR system in Europe or the US could produce for this place in a "country", "nationality" or "jurisdiction" field. Mix:
+- official and short names in English, German, French, Spanish, Italian, Dutch, Norwegian, Danish, Swedish, Finnish, Turkish, Polish, Portuguese and the local language(s), written in Latin script;
+- abbreviations and codes people write;
+- colloquial and historical names;
+- nationality adjectives (for countries);
+- plausible misspellings and typos.
+Every string must refer to this place only. Do not list other countries, cities or regions.
+Reply with JSON only: {{"variants": ["...", "..."]}}

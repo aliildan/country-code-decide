@@ -1,0 +1,391 @@
+{
+ "predictor": "model@0.05",
+ "part": "test",
+ "overall": {
+  "n": 4602,
+  "weight": 1490061.0,
+  "accuracy": 0.4780530204259018,
+  "country_accuracy": 0.37486800422386485,
+  "accuracy_weighted": 0.9942029218938017,
+  "answered": 0.3268144285093438,
+  "risk_answered": 0.03723404255319149,
+  "aurc": 0.32774554378197274,
+  "aurc_weighted": 4.062318227516987e-05,
+  "coverage_at_risk": {
+   "0.01": 0.09213385484571925,
+   "0.02": 0.16492829204693613,
+   "0.05": 0.3268144285093438
+  },
+  "coverage_at_risk_weighted": {
+   "0.01": 1.0,
+   "0.02": 1.0,
+   "0.05": 1.0
+  },
+  "ece": 0.021889606066216833,
+  "none_items": 814,
+  "none_false_accept": 0.04176904176904177,
+  "ambiguous_items": 0,
+  "accuracy_ci95": [
+   0.4634887005649717,
+   0.49218817905258583
+  ],
+  "coverage_at_1pct_ci95": [
+   0.019980443285528032,
+   0.16298348544111255
+  ]
+ },
+ "slices": {
+  "field_kind=country": {
+   "n": 4207,
+   "weight": 9603.0,
+   "accuracy": 0.45780841454718324,
+   "country_accuracy": 0.33814432989690724,
+   "accuracy_weighted": 0.2459648026658336,
+   "answered": 0.2926075588305206,
+   "risk_answered": 0.045491470349309504,
+   "aurc": 0.37161668857624675,
+   "aurc_weighted": 0.5613369886895445,
+   "coverage_at_risk": {
+    "0.01": 0.07748989778939862,
+    "0.02": 0.09507962918944617,
+    "0.05": 0.2926075588305206
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.04040404040404041,
+    "0.02": 0.1100697698635843,
+    "0.05": 0.17359158596271998
+   },
+   "ece": 0.01582438049429823,
+   "none_items": 812,
+   "none_false_accept": 0.04187192118226601,
+   "ambiguous_items": 0
+  },
+  "field_kind=jurisdiction": {
+   "n": 395,
+   "weight": 1480458.0,
+   "accuracy": 0.6936708860759494,
+   "country_accuracy": 0.6921119592875318,
+   "accuracy_weighted": 0.9990563730953529,
+   "answered": 0.6911392405063291,
+   "risk_answered": 0.0,
+   "aurc": 0.05393482837268808,
+   "aurc_weighted": 4.763228331894528e-07,
+   "coverage_at_risk": {
+    "0.01": 0.6911392405063291,
+    "0.02": 0.6911392405063291,
+    "0.05": 0.6911392405063291
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.049238663498567384,
+   "none_items": 2,
+   "none_false_accept": 0.0,
+   "ambiguous_items": 0
+  },
+  "gold=country": {
+   "n": 3576,
+   "weight": 10583.0,
+   "accuracy": 0.3422818791946309,
+   "country_accuracy": 0.3422818791946309,
+   "accuracy_weighted": 0.2498346404611169,
+   "answered": 0.3484340044742729,
+   "risk_answered": 0.01765650080256822,
+   "aurc": 0.29415261815544164,
+   "aurc_weighted": 0.429099488242343,
+   "coverage_at_risk": {
+    "0.01": 0.2575503355704698,
+    "0.02": 0.3484340044742729,
+    "0.05": 0.3484340044742729
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.2519134460927903,
+    "0.02": 0.2519134460927903,
+    "0.05": 0.2519134460927903
+   },
+   "ece": 0.04287202964711777,
+   "none_items": 0,
+   "none_false_accept": null,
+   "ambiguous_items": 0
+  },
+  "gold=none": {
+   "n": 814,
+   "weight": 814.0,
+   "accuracy": 0.9582309582309583,
+   "country_accuracy": NaN,
+   "accuracy_weighted": 0.9582309582309583,
+   "answered": 0.07616707616707617,
+   "risk_answered": 0.5483870967741935,
+   "aurc": 0.8757447587950165,
+   "aurc_weighted": 0.8757447587950165,
+   "coverage_at_risk": {
+    "0.01": 0.0012285012285012285,
+    "0.02": 0.0012285012285012285,
+    "0.05": 0.0012285012285012285
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.0012285012285012285,
+    "0.02": 0.0012285012285012285,
+    "0.05": 0.0012285012285012285
+   },
+   "ece": 0.4702491905944871,
+   "none_items": 814,
+   "none_false_accept": 0.04176904176904177,
+   "ambiguous_items": 0
+  },
+  "gold=us_state": {
+   "n": 212,
+   "weight": 1478664.0,
+   "accuracy": 0.9245283018867925,
+   "country_accuracy": 0.9245283018867925,
+   "accuracy_weighted": 0.999550269702921,
+   "answered": 0.9245283018867925,
+   "risk_answered": 0.0,
+   "aurc": 0.0031001767356918426,
+   "aurc_weighted": 1.2319723882240343e-07,
+   "coverage_at_risk": {
+    "0.01": 0.9245283018867925,
+    "0.02": 0.9245283018867925,
+    "0.05": 0.9245283018867925
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.04417790000071105,
+   "none_items": 0,
+   "none_false_accept": null,
+   "ambiguous_items": 0
+  },
+  "label=auto_exact": {
+   "n": 622,
+   "weight": 1486081.0,
+   "accuracy": 0.6028938906752411,
+   "country_accuracy": 0.6016129032258064,
+   "accuracy_weighted": 0.9956375190854334,
+   "answered": 0.6012861736334405,
+   "risk_answered": 0.0,
+   "aurc": 0.09316927363934618,
+   "aurc_weighted": 1.0987111653440391e-05,
+   "coverage_at_risk": {
+    "0.01": 0.6012861736334405,
+    "0.02": 0.6012861736334405,
+    "0.05": 0.6012861736334405
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.050158281128845975,
+   "none_items": 2,
+   "none_false_accept": 0.0,
+   "ambiguous_items": 0
+  },
+  "label=preset": {
+   "n": 3980,
+   "weight": 3980.0,
+   "accuracy": 0.4585427135678392,
+   "country_accuracy": 0.33049242424242425,
+   "accuracy_weighted": 0.4585427135678392,
+   "answered": 0.28391959798994976,
+   "risk_answered": 0.049557522123893805,
+   "aurc": 0.38443513191336465,
+   "aurc_weighted": 0.38443513191336465,
+   "coverage_at_risk": {
+    "0.01": 0.030904522613065328,
+    "0.02": 0.07989949748743719,
+    "0.05": 0.28391959798994976
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.030904522613065328,
+    "0.02": 0.07989949748743719,
+    "0.05": 0.28391959798994976
+   },
+   "ece": 0.012533425116284467,
+   "none_items": 812,
+   "none_false_accept": 0.04187192118226601,
+   "ambiguous_items": 0
+  },
+  "lexicon=novel": {
+   "n": 3242,
+   "weight": 3242.0,
+   "accuracy": 0.4080814312152992,
+   "country_accuracy": 0.23974255832662913,
+   "accuracy_weighted": 0.4080814312152992,
+   "answered": 0.20450339296730413,
+   "risk_answered": 0.07692307692307693,
+   "aurc": 0.5079040860461844,
+   "aurc_weighted": 0.5079040860461844,
+   "coverage_at_risk": {
+    "0.01": 0.00431832202344232,
+    "0.02": 0.00431832202344232,
+    "0.05": 0.06847624922887106
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.00431832202344232,
+    "0.02": 0.00431832202344232,
+    "0.05": 0.06847624922887106
+   },
+   "ece": 0.016346413756768468,
+   "none_items": 756,
+   "none_false_accept": 0.03835978835978836,
+   "ambiguous_items": 0
+  },
+  "lexicon=seen": {
+   "n": 1360,
+   "weight": 1486819.0,
+   "accuracy": 0.6448529411764706,
+   "country_accuracy": 0.6328725038402457,
+   "accuracy_weighted": 0.9954809563235336,
+   "answered": 0.6183823529411765,
+   "risk_answered": 0.005945303210463734,
+   "aurc": 0.088155509249098,
+   "aurc_weighted": 1.4512416717656729e-05,
+   "coverage_at_risk": {
+    "0.01": 0.6183823529411765,
+    "0.02": 0.6183823529411765,
+    "0.05": 0.6183823529411765
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.043031978616224764,
+   "none_items": 58,
+   "none_false_accept": 0.08620689655172414,
+   "ambiguous_items": 0
+  },
+  "script=CYRILLIC": {
+   "n": 5,
+   "weight": 5.0,
+   "accuracy": 0.4,
+   "country_accuracy": 0.4,
+   "accuracy_weighted": 0.4,
+   "answered": 0.4,
+   "risk_answered": 0.0,
+   "aurc": 0.2866666666666666,
+   "aurc_weighted": 0.2866666666666666,
+   "coverage_at_risk": {
+    "0.01": 0.4,
+    "0.02": 0.4,
+    "0.05": 0.4
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.4,
+    "0.02": 0.4,
+    "0.05": 0.4
+   },
+   "ece": 0.038308308088928156,
+   "none_items": 0,
+   "none_false_accept": null,
+   "ambiguous_items": 0
+  },
+  "script=LATIN": {
+   "n": 4597,
+   "weight": 1490056.0,
+   "accuracy": 0.4781379160321949,
+   "country_accuracy": 0.3748347872059212,
+   "accuracy_weighted": 0.9942049157883999,
+   "answered": 0.32673482706112683,
+   "risk_answered": 0.037283621837549935,
+   "aurc": 0.32786368473873784,
+   "aurc_weighted": 4.0610640749870025e-05,
+   "coverage_at_risk": {
+    "0.01": 0.09201653252120949,
+    "0.02": 0.16467261257341745,
+    "0.05": 0.32673482706112683
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.02186774361345686,
+   "none_items": 814,
+   "none_false_accept": 0.04176904176904177,
+   "ambiguous_items": 0
+  },
+  "source=gbif": {
+   "n": 3980,
+   "weight": 3980.0,
+   "accuracy": 0.4585427135678392,
+   "country_accuracy": 0.33049242424242425,
+   "accuracy_weighted": 0.4585427135678392,
+   "answered": 0.28391959798994976,
+   "risk_answered": 0.049557522123893805,
+   "aurc": 0.38443513191336465,
+   "aurc_weighted": 0.38443513191336465,
+   "coverage_at_risk": {
+    "0.01": 0.030904522613065328,
+    "0.02": 0.07989949748743719,
+    "0.05": 0.28391959798994976
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.030904522613065328,
+    "0.02": 0.07989949748743719,
+    "0.05": 0.28391959798994976
+   },
+   "ece": 0.012533425116284467,
+   "none_items": 812,
+   "none_false_accept": 0.04187192118226601,
+   "ambiguous_items": 0
+  },
+  "source=us-co": {
+   "n": 243,
+   "weight": 25757.0,
+   "accuracy": 0.588477366255144,
+   "country_accuracy": 0.5850622406639004,
+   "accuracy_weighted": 0.9325620219746088,
+   "answered": 0.5843621399176955,
+   "risk_answered": 0.0,
+   "aurc": 0.10255205638564703,
+   "aurc_weighted": 0.0024961334068380765,
+   "coverage_at_risk": {
+    "0.01": 0.5843621399176955,
+    "0.02": 0.5843621399176955,
+    "0.05": 0.5843621399176955
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 0.9325231975773576,
+    "0.02": 0.9325231975773576,
+    "0.05": 0.9325231975773576
+   },
+   "ece": 0.04773080680838976,
+   "none_items": 2,
+   "none_false_accept": 0.0,
+   "ambiguous_items": 0
+  },
+  "source=us-ct": {
+   "n": 379,
+   "weight": 1460324.0,
+   "accuracy": 0.6121372031662269,
+   "country_accuracy": 0.6121372031662269,
+   "accuracy_weighted": 0.9967500362933157,
+   "answered": 0.6121372031662269,
+   "risk_answered": 0.0,
+   "aurc": 0.08793767136111039,
+   "aurc_weighted": 6.743731059921827e-06,
+   "coverage_at_risk": {
+    "0.01": 0.6121372031662269,
+    "0.02": 0.6121372031662269,
+    "0.05": 0.6121372031662269
+   },
+   "coverage_at_risk_weighted": {
+    "0.01": 1.0,
+    "0.02": 1.0,
+    "0.05": 1.0
+   },
+   "ece": 0.051644062824987264,
+   "none_items": 0,
+   "none_false_accept": null,
+   "ambiguous_items": 0
+  }
+ },
+ "latency_ms_per_item": 4.597248873968013,
+ "preregistration_sha256": "e19af3a12a3baae09b8f57dc1091d17d3fd1637f4d745be6520f4bcc0af4e1ed"
+}

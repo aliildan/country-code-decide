@@ -1,0 +1,23 @@
+# Private (CLAUDE.md §2.6) — never committed
+/CLAUDE.md
+/docs/
+/notes/
+/secrets/
+/data/
+/runs/
+*.env
+*.gguf
+*.safetensors
+*.onnx
+
+# Tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.superpowers/
+
+# Release bundles (uploaded to Hugging Face, never committed)
+/dist/
+/web/model/

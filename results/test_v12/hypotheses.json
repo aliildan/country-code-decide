@@ -1,0 +1,104 @@
+{
+ "P1": {
+  "certified": true,
+  "lambda": 0.8273787041356887,
+  "answered_n": 309,
+  "errors": 3,
+  "p_value_risk_le_2pct": 0.947248723827814,
+  "contradicted": false,
+  "pass": true
+ },
+ "P2": {
+  "answered": 0.8559556786703602,
+  "pass": true
+ },
+ "P3": {
+  "size_mb": 74.731597,
+  "cpu_p50_ms": 4.0922699990915135,
+  "tokens_identical": 1.0,
+  "select_accuracy_drop": 0.0028011204481792618,
+  "pass": true
+ },
+ "P4": {
+  "model_accuracy": 0.8864265927977839,
+  "best_non_llm": "e5_knn",
+  "best_non_llm_accuracy": 0.8254847645429363,
+  "pass": true
+ },
+ "A1": {
+  "certified": false,
+  "answered": 0.0,
+  "risk_answered": NaN,
+  "pass": null
+ },
+ "gold_quality": {
+  "n": 592,
+  "agree": 587,
+  "disagree": 5,
+  "agreement": 0.9915540540540541,
+  "gold_error_upper_95": 0.017675919190165697,
+  "by_mode": {
+   "auto_exact": {
+    "n": 337,
+    "disagree": 0
+   },
+   "preset": {
+    "n": 37,
+    "disagree": 0
+   },
+   "reviewed_proposal": {
+    "n": 218,
+    "disagree": 5
+   }
+  },
+  "adjudicated": 5,
+  "adjudicated_to_blind": 5
+ },
+ "seen": {
+  "dataset": "v12f",
+  "role": "test_v12",
+  "by_source": {
+   "us-ny": {
+    "items": 246,
+    "seen": 228
+   },
+   "us-or": {
+    "items": 115,
+    "seen": 99
+   }
+  }
+ },
+ "bundle": "dist/countrycode-small-v1.2",
+ "run": "runs/r-trim-C",
+ "pending_g1": false,
+ "calibration": {
+  "curated": {
+   "temps": [
+    2.2867150467655692,
+    0.20570054404174923
+   ],
+   "thresholds": {
+    "0.01": null,
+    "0.02": null,
+    "0.05": 0.7326620612561575
+   },
+   "q": 0.9881178825692849,
+   "candidate_rule": "min_p",
+   "procedure": "fst"
+  },
+  "register": {
+   "temps": [
+    1.3318443772049013,
+    1.6701822022964463
+   ],
+   "thresholds": {
+    "0.01": null,
+    "0.02": 0.8273787041356887,
+    "0.05": 0.5755507073107454
+   },
+   "q": 0.9997323706032406,
+   "candidate_rule": "min_p",
+   "procedure": "fst"
+  }
+ }
+}

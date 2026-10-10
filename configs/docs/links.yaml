@@ -1,0 +1,33 @@
+# Public identifiers and citation metadata, rendered into README badges and citation block, the
+# model card and CITATION.cff (scripts/make_docs.py). DOIs stay null until Zenodo has minted them
+# (docs/paper/ZENODO_CHECKLIST.md).
+title: "CountryCode-Decide: messy country names to ISO 3166 codes, with calibrated abstention"
+paper_title: "From Messy Country Names to ISO 3166 Codes: A Small Model That Abstains at a Certified Error Rate"
+authors:
+  - {given: "Ali", family: "Ildan", affiliation: "Unaffiliated"}
+year: 2026
+version: "1.2.0"
+date_released: "2026-10-10"
+repo: "https://github.com/aliildan/country-code-decide"
+hf_model: "aildan/country-code-decide-small"
+paper_doi: null
+software_doi: null
+abstract: >-
+  A small open-weight model (mmBERT-small, 8-bit ONNX, CPU or browser) that maps a country or US
+  state written as free text in company registers and forms (any language or script, misspelled,
+  abbreviated, historical) to ISO 3166-1 alpha-2 and ISO 3166-2:US codes with calibrated
+  probabilities, and abstains with a short candidate list when a certified error-rate target
+  cannot be met. Training combines Unicode CLDR and Wikidata names, real register strings and
+  generated variants that passed quality gates and a human label audit; answer thresholds are
+  certified by fixed-sequence testing on held-out real register strings; evaluation uses fresh
+  registers read once after a frozen pre-registration.
+keywords:
+  - ISO 3166
+  - country codes
+  - entity normalization
+  - know-your-business
+  - company registers
+  - calibration
+  - selective prediction
+  - abstention
+  - Learn-then-Test

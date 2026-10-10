@@ -1,0 +1,23 @@
+{
+ "n": 592,
+ "agree": 587,
+ "disagree": 5,
+ "agreement": 0.9915540540540541,
+ "gold_error_upper_95": 0.017675919190165697,
+ "by_mode": {
+  "auto_exact": {
+   "n": 337,
+   "disagree": 0
+  },
+  "preset": {
+   "n": 37,
+   "disagree": 0
+  },
+  "reviewed_proposal": {
+   "n": 218,
+   "disagree": 5
+  }
+ },
+ "adjudicated": 5,
+ "adjudicated_to_blind": 5
+}

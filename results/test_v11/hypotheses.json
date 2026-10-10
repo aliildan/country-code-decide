@@ -1,0 +1,63 @@
+{
+ "R1": {
+  "model_accuracy": 0.8048780487804879,
+  "best_non_llm": "e5_knn",
+  "best_non_llm_accuracy": 0.625,
+  "pass": true
+ },
+ "R2": {
+  "realised_risk": NaN,
+  "answered": 0.0,
+  "pass": false
+ },
+ "R3": {
+  "none_items": 66,
+  "none_false_accept": 0.0,
+  "answered": 0.0,
+  "pass": false
+ },
+ "R4": {
+  "v1_accuracy": 0.7667682926829268,
+  "model_accuracy": 0.8048780487804879,
+  "pass": true
+ },
+ "R5": {
+  "cpu_p50_ms": 4.050746003485983,
+  "pass": true
+ },
+ "R6": {
+  "llm": "llm_qwen3.5_35b-a3b-q4_K_M",
+  "llm_accuracy": 0.7378048780487805,
+  "latency_ratio": 26.621610246154816,
+  "pass": true
+ },
+ "bundle": "dist/countrycode-small-v1.1",
+ "run": "runs/small-v11-noplace",
+ "pending_g1": true,
+ "calibration": {
+  "curated": {
+   "temps": [
+    2.6481451267676634,
+    1.0
+   ],
+   "thresholds": {
+    "0.01": null,
+    "0.02": null,
+    "0.05": 0.92
+   },
+   "q": 0.9866202942907889
+  },
+  "register": {
+   "temps": [
+    1.523930399060333,
+    2.213661994599166
+   ],
+   "thresholds": {
+    "0.01": null,
+    "0.02": null,
+    "0.05": 0.65
+   },
+   "q": 0.9999101547991387
+  }
+ }
+}

@@ -1,0 +1,56 @@
+# Real evaluation sources (design-01 §4). Socrata aggregate queries only: distinct values + counts.
+# Fields chosen in plan-02 Task 1 (ruling in the ledger); field_kind drives the model context.
+socrata:
+  - source: "us-co"
+    domain: "data.colorado.gov"
+    dataset: "4ykn-tg5h"          # Business Entities in Colorado — Public Domain
+    register_country: "US-CO"     # the register's own jurisdiction (owner labels: "Adams" → US-CO)
+    fields:
+      jurisdictonofformation: "jurisdiction"   # (sic)
+      principalcountry: "country"
+      mailingcountry: "country"
+  - source: "us-ct"
+    domain: "data.ct.gov"
+    dataset: "n7gp-d28j"          # Connecticut Business Registry - Business Master — Public Domain
+    register_country: "US-CT"
+    fields:
+      country_formation: "country"
+      billingcountry: "country"
+      mailing_jurisdiction_country: "country"
+      office_in_jurisdiction_country: "country"
+      records_address_country: "country"
+      formation_place: "jurisdiction"
+      state_or_territory_formation: "jurisdiction"
+      billingstate: "jurisdiction"
+  # Fresh test v1.2 (held out in full: configs/held_out_sources.yaml). Licences: decisions.md
+  # 2026-10-10 14:05 — New York OPEN-NY terms (evaluation only), Oregon public domain.
+  - source: "us-ny"
+    domain: "data.ny.gov"
+    dataset: "n9v6-gdp6"          # Active Corporations: Beginning 1800
+    register_country: "US-NY"
+    fields:
+      jurisdiction: "jurisdiction"
+  - source: "us-ny"
+    domain: "data.ny.gov"
+    dataset: "2tms-hftb"          # Corporations and Other Entities: All Filings - Address
+    register_country: "US-NY"
+    fields:
+      country: "country"
+  - source: "us-ny"
+    domain: "data.ny.gov"
+    dataset: "k4vb-judh"          # Daily Corporation and Other Entity Filing Data
+    register_country: "US-NY"
+    fields:
+      filer_country: "country"
+  - source: "us-or"
+    domain: "data.oregon.gov"
+    dataset: "tckn-sxa6"          # Active Businesses - ALL — public domain (ORS 276A.368)
+    register_country: "US-OR"
+    fields:
+      jurisdiction: "jurisdiction"
+gbif:
+  source: "gbif"
+  # gbif/parsers countryName.tsv (Apache-2.0), pinned commit
+  url: "https://raw.githubusercontent.com/gbif/parsers/a918c9f8d9f2144df4fe8463c4fe9ba64cfa2db4/src/main/resources/dictionaries/parse/countryName.tsv"
+  field_kind: "country"
+  register_country: "unknown"
