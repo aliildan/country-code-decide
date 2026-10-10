@@ -32,7 +32,8 @@ Serving needs only `onnxruntime`, `tokenizers` and `numpy` (no PyTorch). The dec
 ```bash
 git clone {{REPO}} && cd country-code-decide
 uv sync --no-default-groups --group serve && source .venv/bin/activate
-uvx --from huggingface_hub hf download aildan/country-code-decide-small --local-dir models/country-code-decide-small
+uvx --from huggingface_hub hf download aildan/country-code-decide-small --exclude model.onnx \
+  --local-dir models/country-code-decide-small
 ```
 
 ```python

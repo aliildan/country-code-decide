@@ -124,11 +124,11 @@ uv sync --no-default-groups --group serve
 source .venv/bin/activate        # plain `uv run` would sync the full training stack (PyTorch)
 ```
 
-**2. Download the model** (int8 ONNX, tokenizer, calibration):
+**2. Download the model** (int8 ONNX, tokenizer, calibration; the fp32 reference file is skipped):
 
 ```bash
 uvx --from huggingface_hub hf download aildan/country-code-decide-small \
-  --local-dir models/country-code-decide-small
+  --exclude model.onnx --local-dir models/country-code-decide-small
 ```
 
 **3. Code strings in Python.**
