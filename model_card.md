@@ -168,7 +168,8 @@ Browser: onnxruntime-web computes the 8-bit matrix products in fp32 where the CP
 - One human reviewer labelled the register strings; the calibration strings were labelled twice by
   that reviewer, the second time blind (consistency, not inter-annotator agreement).
 - Certified error rates hold for the population they were fitted on; recalibrate before relying on
-  them for a different source. The curated GBIF domain is much harder than registers for this
+  them for a different source. Each target is certified on its own (with probability ≥ 90 % over the
+  calibration draw); the 2 % and 5 % guarantees are not simultaneous. The curated GBIF domain is much harder than registers for this
   model, and there a 35B LLM is more accurate.
 - Ambiguous names are returned as candidate lists; downstream systems must not silently pick one.
 - Known gaps: Canadian province codes in US jurisdiction fields (`ON`, `BC`) are not recognised;
