@@ -211,7 +211,8 @@ Latency and size: p50 4.1 ms, p95 5.1 ms per string on CPU (4 threads, ONNX Runt
   title = {CountryCode-Decide: messy country names to ISO 3166 codes, with calibrated abstention},
   author = {Ildan, Ali},
   year = {2026},
-  url = {https://github.com/aliildan/country-code-decide}
+  url = {https://github.com/aliildan/country-code-decide},
+  doi = {10.5281/zenodo.23289336}
 }
 ```
 

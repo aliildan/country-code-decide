@@ -26,3 +26,8 @@ keywords:
 - selective prediction
 - abstention
 - Learn-then-Test
+doi: 10.5281/zenodo.23289336
+identifiers:
+- type: doi
+  value: 10.5281/zenodo.23289336
+  description: Zenodo software DOI

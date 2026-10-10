@@ -11,7 +11,7 @@ date_released: "2026-10-10"
 repo: "https://github.com/aliildan/country-code-decide"
 hf_model: "aildan/country-code-decide-small"
 paper_doi: null
-software_doi: null
+software_doi: "10.5281/zenodo.23289336"
 abstract: >-
   A small open-weight model (mmBERT-small, 8-bit ONNX, CPU) that maps a country or US
   state written as free text in company registers and forms (any language or script, misspelled,

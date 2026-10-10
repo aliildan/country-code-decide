@@ -11,6 +11,7 @@ misspelled, abbreviated, historical, in many languages — on your own machine:<
 [![Licence: Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB.svg?logo=python&logoColor=white)](pyproject.toml)
 [![Model on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20model-country--code--decide--small-FFD21E.svg)](https://huggingface.co/aildan/country-code-decide-small)
+[![Software DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23289336.svg)](https://doi.org/10.5281/zenodo.23289336)
 
 [Quick start](#quick-start) · [At a glance](#at-a-glance) · [Accuracy](#accuracy) ·
 [How it works](#how-it-works) · [Limitations](#limitations-and-responsible-use) ·
@@ -386,7 +387,8 @@ which need a local OCR engine and cached hosted-LLM outputs.
   title = {CountryCode-Decide: messy country names to ISO 3166 codes, with calibrated abstention},
   author = {Ildan, Ali},
   year = {2026},
-  url = {https://github.com/aliildan/country-code-decide}
+  url = {https://github.com/aliildan/country-code-decide},
+  doi = {10.5281/zenodo.23289336}
 }
 ```
 
