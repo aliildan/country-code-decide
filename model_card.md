@@ -14,7 +14,7 @@ abbreviations, historical names, register junk — to ISO 3166-1 alpha-2 / ISO 3
 calibrated probabilities, and **abstains** when the requested error rate cannot be met.
 75 MB, about 4 ms per string on a CPU.
 
-Code, evaluation and documentation: https://github.com/aliildan/country-code-decide
+Code, evaluation and documentation: https://github.com/aliildan/country-code-decide · [Paper](https://doi.org/10.5281/zenodo.23289343)
 
 ## Intended use
 
@@ -207,6 +207,14 @@ Latency and size: p50 4.1 ms, p95 5.1 ms per string on CPU (4 threads, ONNX Runt
 ## Citation
 
 ```bibtex
+@misc{ildan2026countrycode,
+  title = {From Messy Country Names to ISO 3166 Codes: A Small Model That Abstains, and When a Lexicon Is Enough},
+  author = {Ildan, Ali},
+  year = {2026},
+  publisher = {Zenodo},
+  doi = {10.5281/zenodo.23289343}
+}
+
 @software{ildan2026countrycode_software,
   title = {CountryCode-Decide: messy country names to ISO 3166 codes, with calibrated abstention},
   author = {Ildan, Ali},

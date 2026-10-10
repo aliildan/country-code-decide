@@ -10,7 +10,7 @@ version: "1.2.1"
 date_released: "2026-10-10"
 repo: "https://github.com/aliildan/country-code-decide"
 hf_model: "aildan/country-code-decide-small"
-paper_doi: null
+paper_doi: "10.5281/zenodo.23289343"
 software_doi: "10.5281/zenodo.23289336"
 abstract: >-
   A small open-weight model (mmBERT-small, 8-bit ONNX, CPU) that maps a country or US

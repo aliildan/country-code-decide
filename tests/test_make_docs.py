@@ -358,6 +358,8 @@ def test_citation_cff_is_generated_from_links_and_gains_dois_once_minted(tmp_pat
     assert cff["doi"] == "10.5281/zenodo.22"
     pc = cff["preferred-citation"]
     assert pc["doi"] == "10.5281/zenodo.11" and pc["title"] == "Paper T" and pc["type"] == "article"
+    text = make_docs.citation_cff(r)
+    assert "&id" not in text and "*id" not in text  # no YAML aliases: plain CFF for every reader
 
 
 def _v121(tmp_path):

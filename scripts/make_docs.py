@@ -451,7 +451,7 @@ def citation_cff(res: Path) -> str:
         cff["identifiers"] = [{"type": "doi", "value": d, "description": "Zenodo software DOI"}]
     if d := links.get("paper_doi"):
         cff["preferred-citation"] = {
-            "type": "article", "title": links["paper_title"], "authors": authors,
+            "type": "article", "title": links["paper_title"], "authors": [dict(a) for a in authors],
             "year": links["year"], "doi": d, "publisher": {"name": "Zenodo"},
             "url": f"https://doi.org/{d}",
         }  # fmt: skip

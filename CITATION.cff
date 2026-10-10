@@ -31,3 +31,15 @@ identifiers:
 - type: doi
   value: 10.5281/zenodo.23289336
   description: Zenodo software DOI
+preferred-citation:
+  type: article
+  title: 'From Messy Country Names to ISO 3166 Codes: A Small Model That Abstains, and When a Lexicon
+    Is Enough'
+  authors:
+  - family-names: Ildan
+    given-names: Ali
+  year: 2026
+  doi: 10.5281/zenodo.23289343
+  publisher:
+    name: Zenodo
+  url: https://doi.org/10.5281/zenodo.23289343
