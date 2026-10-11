@@ -261,3 +261,31 @@ def test_operating_points_that_answer_nothing_are_left_out(tmp_path):
         "overall": {"n": 361, "accuracy": 0.011, "answered": 0.0}})  # fmt: skip
     t = make_tables.table_predictors(r, "posthoc-v1.2.1/test_v12")
     assert "alpha = 2" not in t and "alpha = 5" in t
+
+
+def _cascade_results(tmp_path):
+    r = _posthoc(tmp_path)
+    parts = {
+        "test_v12": {"n": 361, "lexicon": {"answered": 323, "errors": 5},
+                     "residual": {"n": 38, "model_answered": 8, "model_errors": 5},
+                     "cascade": {"answered": 331, "errors": 10}},
+        "test_v11": {"n": 656, "lexicon": {"answered": 163, "errors": 3},
+                     "residual": {"n": 493, "model_answered": 355, "model_errors": 22},
+                     "cascade": {"answered": 518, "errors": 25}},
+    }  # fmt: skip
+    _w(r / "posthoc-v1.2.1" / "cascade.json", {"parts": parts})
+    return r
+
+
+def test_cascade_macros_and_table(tmp_path):
+    r = _cascade_results(tmp_path)
+    m = make_tables.macros(r)
+    for expected in ("\\newcommand{\\CasFreshResN}{38}", "\\newcommand{\\CasFreshResAns}{8}",
+                     "\\newcommand{\\CasFreshResErr}{5}", "\\newcommand{\\CasFreshAnsPct}{91.7}",
+                     "\\newcommand{\\CasFreshErrPct}{3.0}", "\\newcommand{\\CasMessyLexPct}{24.8}",
+                     "\\newcommand{\\CasMessyAnsPct}{79.0}", "\\newcommand{\\CasMessyErrPct}{4.8}",
+                     "\\newcommand{\\CasMessyResRisk}{6.2}"):  # fmt: skip
+        assert expected in m, expected
+    t = make_tables.table_cascade(r)
+    assert "Fresh registers & 361 & 89.5 & 1.5 & 91.7 & 3.0 & 8 / 38 & 5 \\\\" in t
+    assert "tables/cascade.tex" in make_tables.outputs(r)

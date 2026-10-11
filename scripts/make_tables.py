@@ -339,7 +339,63 @@ def _posthoc_macros(res, rel, reps, pre, h, llm, m) -> list[str]:  # noqa: ANN00
     p4 = h.get("P4", {})
     if p4:
         out.append(_cmd("AccBestPre", _pct(p4.get("best_non_llm_accuracy"))))
+    out += _cascade_macros(res, rel)
     return out
+
+
+CASCADE_SETS = (("test_v12", "Fresh", "Fresh registers"),
+                ("test_v11", "Messy", "Held-out strings of the training registers"),
+                ("ood", "Ood", "GBIF curated list"))  # fmt: skip
+
+
+def _cascade_parts(res: Path, rel: dict) -> dict:
+    return _load((res / rel["part"]).parent / "cascade.json").get("parts", {})
+
+
+def _cascade_macros(res: Path, rel: dict) -> list[str]:
+    out = []
+    for key, tag, _ in CASCADE_SETS:
+        c = _cascade_parts(res, rel).get(key)
+        if not c:
+            continue
+        n, lex, cas, r = c["n"], c["lexicon"], c["cascade"], c["residual"]
+        ma, me = r["model_answered"], r["model_errors"]
+        out += [
+            _cmd(f"Cas{tag}N", _num(n)),
+            _cmd(f"Cas{tag}LexPct", _pct(lex["answered"] / n)),
+            _cmd(f"Cas{tag}LexErrPct", _pct(lex["errors"] / max(lex["answered"], 1))),
+            _cmd(f"Cas{tag}AnsPct", _pct(cas["answered"] / n)),
+            _cmd(f"Cas{tag}ErrPct", _pct(cas["errors"] / max(cas["answered"], 1))),
+            _cmd(f"Cas{tag}ResN", _num(r["n"])),
+            _cmd(f"Cas{tag}ResAns", _num(ma)),
+            _cmd(f"Cas{tag}ResErr", _num(me)),
+            _cmd(f"Cas{tag}ResRisk", _pct(me / ma) if ma else "--"),
+        ]
+    return out
+
+
+def table_cascade(res: Path) -> str:
+    """Lexicon first, then the model at its certified 5 % target (post-hoc)."""
+    parts = _cascade_parts(res, _release(res))
+    out = ["\\begin{tabular}{lrrrrrrr}", "\\toprule",
+           "& & \\multicolumn{2}{c}{Lexicon alone} & \\multicolumn{2}{c}{Lexicon, then model} & "
+           "\\multicolumn{2}{c}{Model on the residual} \\\\",
+           "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\\cmidrule(lr){7-8}",
+           "Set & $n$ & Answered & Error & Answered & Error & Answered & Wrong \\\\",
+           "\\midrule"]  # fmt: skip
+    for key, _, name in CASCADE_SETS:
+        c = parts.get(key)
+        if not c:
+            continue
+        n, lex, cas, r = c["n"], c["lexicon"], c["cascade"], c["residual"]
+        cells = [name, _num(n), _pct(lex["answered"] / n),
+                 _pct(lex["errors"] / max(lex["answered"], 1)), _pct(cas["answered"] / n),
+                 _pct(cas["errors"] / max(cas["answered"], 1)),
+                 f"{_num(r['model_answered'])} / {_num(r['n'])}",
+                 _num(r["model_errors"])]  # fmt: skip
+        out.append(" & ".join(cells) + " \\\\")
+    out += ["\\bottomrule", "\\end{tabular}"]
+    return "\n".join(out) + "\n"
 
 
 def table_predictors(res: Path, part: str) -> str:
@@ -527,6 +583,7 @@ def outputs(res: Path) -> dict[str, str]:
     files = {
         "tables/macros.tex": macros(res),
         "tables/labels.tex": table_label_types(res),
+        "tables/cascade.tex": table_cascade(res),
         "tables/test.tex": table_predictors(res, part),
         "tables/slices.tex": table_slices(res, part),
         "tables/releases.tex": table_releases(res),

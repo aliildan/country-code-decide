@@ -1,0 +1,11 @@
+\begin{tabular}{lrrrrrrr}
+\toprule
+& & \multicolumn{2}{c}{Lexicon alone} & \multicolumn{2}{c}{Lexicon, then model} & \multicolumn{2}{c}{Model on the residual} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}
+Set & $n$ & Answered & Error & Answered & Error & Answered & Wrong \\
+\midrule
+Fresh registers & 361 & 89.5 & 1.5 & 91.7 & 3.0 & 8 / 38 & 5 \\
+Held-out strings of the training registers & 656 & 24.8 & 1.8 & 79.0 & 4.8 & 355 / 493 & 22 \\
+GBIF curated list & 3{,}980 & 17.8 & 2.4 & 39.6 & 4.8 & 867 / 3{,}270 & 59 \\
+\bottomrule
+\end{tabular}
