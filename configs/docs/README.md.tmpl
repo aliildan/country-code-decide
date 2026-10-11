@@ -54,16 +54,25 @@ California in a US jurisdiction field) does as well as the model there:
 
 Automatic labels come from an exact lexicon match, so a lexicon is right on them by construction;
 the hand-labelled strings are the hard part, and there the model, the LLM and the context lexicon
-are about level. The model earns its place on messier strings. {{WHERE_IT_HELPS}} In practice:
-look strings up in a lexicon with context rules first, and send what it cannot read to the model,
-which answers what it can at the certified error rate and abstains on the rest.
+are about level. The model earns its place on messier strings. {{WHERE_IT_HELPS}}
+
+**Lexicon first, then the model.** Measured as a cascade — the context lexicon answers what it can,
+the model at its 5 % target gets the rest:
+
+{{CASCADE}}
+
+On messy register strings the model roughly triples what is answered automatically. But on the
+strings a lexicon cannot read, the model's 5 % certificate does **not** hold (last column): the
+certificate is an average over mostly easy strings, and the model is over-confident on the hard rest,
+most of all in registers it has not seen. Until that residual has its own calibration, treat the
+model's answers there as suggestions for review.
 
 ## Why CountryCode-Decide
 
 | | |
 |---|---|
 | **Codes, not text** | Every answer is a probability over a fixed label space: 250 country codes, 51 US state codes and "not a country". Nothing is generated, so it cannot invent a code that does not exist. It can still be wrong with high confidence, which is why a person reviews abstentions and candidate lists. |
-| **Says "I don't know" — with a certificate** | Thresholds are chosen by a fixed-sequence test (Learn-then-Test) on held-out real register strings, counted once per register and normalised key, so "answer only above λ" carries a finite-sample guarantee on the error rate ({{CERTIFIED}}). Below the threshold the string goes to review. |
+| **Says "I don't know" — with a certificate** | Thresholds are chosen by a fixed-sequence test (Learn-then-Test) on held-out real register strings, counted once per register and normalised key, so "answer only above λ" carries a finite-sample guarantee on the error rate ({{CERTIFIED}}) — on average over strings like the calibration strings, not on the hard strings a lexicon cannot read. Below the threshold the string goes to review. |
 | **Reads context** | `CA` in a US *jurisdiction-of-formation* field is California, in a *country* field Canada; `Georgia` is the US state for a US register and the country otherwise. The request carries the field and the register's country. |
 | **Typos, abbreviations, many languages** | Trained on country names from Unicode CLDR and Wikidata in many languages and scripts (see the lexicon under How it works), GeoNames places, real register strings, and generated variants (keyboard typos on real layouts, transliterations, formatting noise) that passed quality gates and a human audit. {{SCRIPT_SCOPE}} |
 | **Small and fast** | One 8-bit ONNX file; serving needs no PyTorch and no GPU — onnxruntime, tokenizers and NumPy do the work, offline. |
@@ -238,6 +247,9 @@ Serving: {{LATENCY}}.
   abbreviated register strings, and it was measured on held-out strings of registers whose other
   strings were in training. On strings with no exact lexicon match in the fresh registers it is
   right far less often (see Accuracy), which points to register-specific learning.
+- **No certificate for what a lexicon cannot read.** In a lexicon-first cascade the model gets the
+  hard residual, where its errors at the 5 % target are well above 5 % (see the cascade table); the
+  residual needs its own calibration, on registers held out of training.
 - **The certificate is an average, per target.** It holds for strings drawn like the calibration
   strings (register fields), counted per register and normalised key, each target on its own; the
   errors concentrate on hard strings. Recalibrate before relying on it for another source. The

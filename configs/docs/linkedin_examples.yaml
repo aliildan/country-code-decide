@@ -1,0 +1,11 @@
+# Examples for the LinkedIn card (scripts/linkedin_assets.py). Chosen by hand to show typos, context
+# and abstention; the answers are the release model's real output. Values are read as strings.
+- {text: "Untied Kingdon", field: "country"}
+- {text: "BRITSH VIRGN ISLNDS", field: "country"}
+- {text: "Swizterland", field: "country"}
+- {text: "Österiech", field: "country"}
+- {text: "Kaliforina", field: "jurisdiction", register_country: "US"}
+- {text: "Massachusets", field: "jurisdiction", register_country: "US"}
+- {text: "Georiga", field: "country"}
+- {text: "Deutchland", field: "country"}
+- {text: "n/a", field: "country"}

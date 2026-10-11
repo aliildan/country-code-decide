@@ -19,6 +19,7 @@ for P in test_v12 test_v11 ood; do
   uv run python -m countrycode.evaluation.report "posthoc-v1.2.1/$P" > /dev/null
 done
 uv run python scripts/risk_coverage.py --part test_v12 --results-dir "$OUT"
+uv run python scripts/cascade.py
 python3 -c "import json, pathlib; pathlib.Path('results/release.json').write_text(json.dumps({ \
 'version': 'small-v1.2.1', 'part': 'posthoc-v1.2.1/test_v12', 'preregistered': 'test_v12', \
 'hypotheses': 'v12', 'train_run': 'small-v12f', 'model_version': 'small-v1.2'}, indent=1) + '\\n')"

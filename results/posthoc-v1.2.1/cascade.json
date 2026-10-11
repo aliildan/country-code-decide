@@ -1,0 +1,107 @@
+{
+ "lexicon": "lexicon_context",
+ "model": "model@0.05",
+ "parts": {
+  "test_v12": {
+   "n": 361,
+   "lexicon": {
+    "answered": 323,
+    "errors": 5
+   },
+   "residual": {
+    "n": 38,
+    "model_answered": 8,
+    "model_errors": 5
+   },
+   "cascade": {
+    "answered": 331,
+    "errors": 10
+   },
+   "model_alone": {
+    "answered": 317,
+    "errors": 8
+   },
+   "residual_by_source": {
+    "us-ny": {
+     "n": 24,
+     "model_answered": 5,
+     "model_errors": 2
+    },
+    "us-or": {
+     "n": 14,
+     "model_answered": 3,
+     "model_errors": 3
+    }
+   }
+  },
+  "test_v11": {
+   "n": 656,
+   "lexicon": {
+    "answered": 163,
+    "errors": 3
+   },
+   "residual": {
+    "n": 493,
+    "model_answered": 355,
+    "model_errors": 22
+   },
+   "cascade": {
+    "answered": 518,
+    "errors": 25
+   },
+   "model_alone": {
+    "answered": 494,
+    "errors": 22
+   },
+   "residual_by_source": {
+    "gb-ch": {
+     "n": 20,
+     "model_answered": 7,
+     "model_errors": 2
+    },
+    "no-brreg": {
+     "n": 0,
+     "model_answered": 0,
+     "model_errors": 0
+    },
+    "us-co": {
+     "n": 362,
+     "model_answered": 288,
+     "model_errors": 11
+    },
+    "us-ct": {
+     "n": 111,
+     "model_answered": 60,
+     "model_errors": 9
+    }
+   }
+  },
+  "ood": {
+   "n": 3980,
+   "lexicon": {
+    "answered": 710,
+    "errors": 17
+   },
+   "residual": {
+    "n": 3270,
+    "model_answered": 867,
+    "model_errors": 59
+   },
+   "cascade": {
+    "answered": 1577,
+    "errors": 76
+   },
+   "model_alone": {
+    "answered": 1324,
+    "errors": 63
+   },
+   "residual_by_source": {
+    "gbif": {
+     "n": 3270,
+     "model_answered": 867,
+     "model_errors": 59
+    }
+   }
+  }
+ }
+}

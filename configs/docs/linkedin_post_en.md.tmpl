@@ -1,0 +1,19 @@
+Country fields in company registers are a mess: "Untied Kingdon", "Kaliforina", "BRITSH VIRGN ISLNDS", "n/a".
+
+I built CountryCode-Decide: a {mb} MB open model that turns them into ISO 3166 codes on a plain CPU (about {ms} ms per string), and says "not sure" instead of guessing when it cannot meet a certified error rate.
+
+What the numbers say:
+• On {n11} held-out strings from the registers it was trained on, most of them misspelled or abbreviated: {m11} right, against {l11} for a 35B-parameter LLM that is {slower}× slower, and {c11} for a name lexicon with context rules.
+• On two fresh registers, at a certified 5% error target it answers {ans} of the strings automatically (realised error {risk}); the rest go to a person with 1–3 candidates.
+
+What surprised me (both are in the paper):
+• Most strings in those fresh registers were standard names, and a plain lexicon with the right context rules ("CA" in a US jurisdiction field is California) did as well as the model: {c12} vs {m12}.
+• An external review caught that my first 2% certificate counted the same string in several fields as independent draws. Counted honestly, only 5% holds; fixed in v1.2.1.
+
+So the right design is a cascade: a lexicon first, the model for what it cannot read, a person for the rest.
+
+Code (Apache-2.0): {repo}
+Model: {hf}
+Paper: {paper}
+
+#NLP #MachineLearning #KYB #DataQuality #OpenSource

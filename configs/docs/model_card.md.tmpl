@@ -115,6 +115,14 @@ Automatic labels come from an exact lexicon match, so a lexicon is right on them
 the hand-labelled strings the model, the LLM and an exact lexicon with the training context rules are
 about level. {{WHERE_IT_HELPS}}
 
+Lexicon first, then the model at its 5 % target:
+
+{{CASCADE}}
+
+The model roughly triples what is answered automatically on messy register strings, but on what the
+lexicon cannot read its 5 % certificate does not hold (last column); treat those answers as
+suggestions for review until the residual has its own calibration.
+
 {{HEADLINE}}
 {{HARD_RISK}}
 
@@ -134,10 +142,12 @@ Latency and size: {{LATENCY}}.
 ## Limitations and risks
 
 - For clean fields an exact lexicon with context rules is as accurate as this model; use the model
-  for what a lexicon cannot read. Its advantage was measured on held-out strings of registers whose
+  for what a lexicon cannot read, but note that its certificate does not cover that residual (see
+  the cascade table). Its advantage was measured on held-out strings of registers whose
   other strings were in training; on fresh registers, strings with no exact lexicon match are hard.
-- The certificate holds for strings drawn like the calibration strings (register fields), counted
-  per register and normalised key, each target on its own (with probability ≥ 90 % over the
+- The certificate holds on average for strings drawn like the calibration strings (register
+  fields), counted per register and normalised key, each target on its own; not on the hard strings
+  a lexicon cannot read (with probability ≥ 90 % over the
   calibration draw); errors concentrate on hard strings. Recalibrate before relying on it for a
   different source. The curated GBIF domain is much harder than registers for this model, and there
   a 35B LLM is more accurate.

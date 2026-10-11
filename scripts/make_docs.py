@@ -339,6 +339,12 @@ def _at_a_glance(res: Path) -> str:
                 if p50 and ms else "")  # fmt: skip
         rows.append(f"| Zero-shot LLM ({k.removeprefix('llm_')}) | "
                     f"{_pct(others[k]['overall']['accuracy'])}{slow} |")  # fmt: skip
+    messy = _load((res / rel["part"]).parent / "cascade.json").get("parts", {}).get("test_v11")
+    if messy:
+        n, lex, cas = messy["n"], messy["lexicon"], messy["cascade"]
+        rows.append(f"| Messy register strings ({n:,}): lexicon alone → lexicon, then model | "
+                    f"answers {_pct(lex['answered'] / n)} → {_pct(cas['answered'] / n)} "
+                    f"(error {_pct(cas['errors'] / cas['answered'])}) |")  # fmt: skip
     lat = _latency_record(res)
     if lat:
         rows.append(f"| Model file · CPU latency | {lat['int8_bytes'] / 1e6:.0f} MB (int8 ONNX) · "
@@ -550,6 +556,36 @@ def _where_it_helps(res: Path) -> str:
     return out
 
 
+CASCADE_SETS = {
+    "test_v12": "Fresh registers (New York, Oregon)",
+    "test_v11": "Held-out strings of the training registers",
+    "ood": "GBIF curated list",
+}
+
+
+def _cascade(res: Path) -> str:
+    """Lexicon first, then the model at its certified 5 % target (results/.../cascade.json)."""
+    parts = _load((res / _release(res)["part"]).parent / "cascade.json").get("parts", {})
+    if not parts:
+        return ""
+    out = ["| Set | Lexicon + context rules alone (answered, error) | Lexicon, then the model "
+           "(answered, error) | Model on what the lexicon cannot read (answered, wrong) |",
+           "|---|---|---|---|"]  # fmt: skip
+    for key, name in CASCADE_SETS.items():
+        if key not in parts:
+            continue
+        c = parts[key]
+        n, lex, cas, res_ = c["n"], c["lexicon"], c["cascade"], c["residual"]
+        ma, me = res_["model_answered"], res_["model_errors"]
+        out.append(
+            f"| {name}, {n:,} strings | {_pct(lex['answered'] / n)}, error "
+            f"{_pct(lex['errors'] / max(lex['answered'], 1))} | {_pct(cas['answered'] / n)}, error "
+            f"{_pct(cas['errors'] / max(cas['answered'], 1))} | "
+            f"{ma:,} of {res_['n']:,}, {me:,} wrong" + (f" ({_pct(me / ma)})" if ma else "") + " |"
+        )
+    return "\n".join(out)
+
+
 def _sibling(res: Path, name: str) -> str:
     """A part of the documented release run (posthoc-v1.2.1/<name> for v1.2.1, else <name>)."""
     own = (res / _release(res)["part"]).parent / name
@@ -598,6 +634,7 @@ BLOCKS = {
     "TABLE_V11": lambda r: _table(r, _sibling(r, "test_v11")),
     "TABLE_OOD": lambda r: _table(r, _sibling(r, "ood")),
     "HARD_RISK": _hard_risk,
+    "CASCADE": _cascade,
     "HYPOTHESES": _hypotheses,
     "SYNTHETIC": _synthetic,
     "LEXICON": _lexicon,

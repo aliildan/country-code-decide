@@ -501,3 +501,32 @@ def test_llm_latency_comes_from_a_run_that_called_the_llm(tmp_path):
     (r / "test_v12" / "llm_qwen3.5_35b-a3b-q4_K_M.json").write_text(json.dumps(d))
     assert "~29× slower" in make_docs._at_a_glance(r)  # 117 ms in the pre-registered read
     assert "~29× slower" in make_docs._headline(r)
+
+
+def _with_cascade(tmp_path):
+    r = _v121(tmp_path)
+    parts = {
+        "test_v12": {"n": 361, "lexicon": {"answered": 323, "errors": 5},
+                     "residual": {"n": 38, "model_answered": 8, "model_errors": 5},
+                     "cascade": {"answered": 331, "errors": 10}},
+        "test_v11": {"n": 656, "lexicon": {"answered": 163, "errors": 3},
+                     "residual": {"n": 493, "model_answered": 355, "model_errors": 22},
+                     "cascade": {"answered": 518, "errors": 25}},
+    }  # fmt: skip
+    (r / "posthoc-v1.2.1" / "cascade.json").write_text(json.dumps({"parts": parts}))
+    return r
+
+
+def test_cascade_table_from_results(tmp_path):
+    out = make_docs._cascade(_with_cascade(tmp_path))
+    assert "| Fresh registers (New York, Oregon), 361 strings | 89.5 %, error 1.5 % |" in out
+    assert "91.7 %, error 3.0 %" in out and "8 of 38, 5 wrong (62.5 %)" in out
+    assert "24.8 %, error 1.8 %" in out and "79.0 %, error 4.8 %" in out
+    assert "355 of 493, 22 wrong (6.2 %)" in out
+    assert make_docs._cascade(_v121(tmp_path / "none")) == ""
+
+
+def test_at_a_glance_shows_what_the_model_adds_on_messy_strings(tmp_path):
+    out = make_docs._at_a_glance(_with_cascade(tmp_path))
+    assert "| Messy register strings (656): lexicon alone → lexicon, then model |" in out
+    assert "answers 24.8 % → 79.0 % (error 4.8 %)" in out

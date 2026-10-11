@@ -127,6 +127,7 @@ weights and corrects the certificate after an external review, so its numbers be
 | At the certified 5 % error target | answers 88 % automatically, realised error 2.5 % |
 | Best non-LLM baseline (exact lexicon + context rules) | 89.5 % |
 | Zero-shot LLM (qwen3.5_35b-a3b-q4_K_M) | 85.0 %, ~29× slower (LLM on a GPU, this model on a CPU) |
+| Messy register strings (656): lexicon alone → lexicon, then model | answers 24.8 % → 79.0 % (error 4.8 %) |
 | Model file · CPU latency | 75 MB (int8 ONNX) · p50 4.1 ms per string |
 
 | Predictor | automatic labels (exact lexicon match, n = 261) | hand-labelled (n = 100) | hand-labelled answered |
@@ -141,6 +142,18 @@ weights and corrects the certificate after an external review, so its numbers be
 Automatic labels come from an exact lexicon match, so a lexicon is right on them by construction; on
 the hand-labelled strings the model, the LLM and an exact lexicon with the training context rules are
 about level. On held-out strings of the training registers (656 strings, many misspelled or abbreviated; other strings of the same registers were in training) the model is right on 82.6 %, the best other predictor (qwen3.5_35b-a3b-q4_K_M zero-shot) on 73.8 %, the lexicon with context rules on 35.8 %; on the 472 of them with no exact lexicon match 81.1 % against 73.1 %. On GBIF's curated list the LLM is better: 69.6 % against 58.8 %.
+
+Lexicon first, then the model at its 5 % target:
+
+| Set | Lexicon + context rules alone (answered, error) | Lexicon, then the model (answered, error) | Model on what the lexicon cannot read (answered, wrong) |
+|---|---|---|---|
+| Fresh registers (New York, Oregon), 361 strings | 89.5 %, error 1.5 % | 91.7 %, error 3.0 % | 8 of 38, 5 wrong (62.5 %) |
+| Held-out strings of the training registers, 656 strings | 24.8 %, error 1.8 % | 79.0 %, error 4.8 % | 355 of 493, 22 wrong (6.2 %) |
+| GBIF curated list, 3,980 strings | 17.8 %, error 2.4 % | 39.6 %, error 4.8 % | 867 of 3,270, 59 wrong (6.8 %) |
+
+The model roughly triples what is answered automatically on messy register strings, but on what the
+lexicon cannot read its 5 % certificate does not hold (last column); treat those answers as
+suggestions for review until the residual has its own calibration.
 
 - Country-level accuracy (right country; a US state counts as US): 0.912 (highest: v1_model 0.921).
 - On the 33 strings not in the lexicon (no exact name match) the model's accuracy is 0.212.
@@ -186,10 +199,12 @@ Latency and size: p50 4.1 ms, p95 5.1 ms per string on CPU (4 threads, ONNX Runt
 ## Limitations and risks
 
 - For clean fields an exact lexicon with context rules is as accurate as this model; use the model
-  for what a lexicon cannot read. Its advantage was measured on held-out strings of registers whose
+  for what a lexicon cannot read, but note that its certificate does not cover that residual (see
+  the cascade table). Its advantage was measured on held-out strings of registers whose
   other strings were in training; on fresh registers, strings with no exact lexicon match are hard.
-- The certificate holds for strings drawn like the calibration strings (register fields), counted
-  per register and normalised key, each target on its own (with probability ≥ 90 % over the
+- The certificate holds on average for strings drawn like the calibration strings (register
+  fields), counted per register and normalised key, each target on its own; not on the hard strings
+  a lexicon cannot read (with probability ≥ 90 % over the
   calibration draw); errors concentrate on hard strings. Recalibrate before relying on it for a
   different source. The curated GBIF domain is much harder than registers for this model, and there
   a 35B LLM is more accurate.
